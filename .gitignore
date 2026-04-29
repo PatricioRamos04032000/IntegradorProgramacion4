@@ -1,0 +1,27 @@
+# Dependencias Node
+node_modules/
+
+# Variables de entorno (datos sensibles)
+.env
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores e IDEs
+.vscode/
+.vs/
+.idea/
+*.suo
+*.user
+
+# Builds locales
+bin/Debug/
+bin/Release/
+obj/
