@@ -4,9 +4,7 @@ block content
   - var esEditar = modo === 'editar'
   - var actionUrl = esEditar ? '/cursos/' + curso.id_curso + '?_method=PUT' : '/cursos'
 
-  .d-flex.justify-content-between.align-items-center.mb-3
-    h1.h3.mb-0= esEditar ? 'Editar curso' : 'Nuevo curso'
-    a.btn.btn-secondary(href='/cursos') Volver
+  h2.mb-3= esEditar ? 'Editar Curso' : 'Nuevo Curso'
 
   if errores && errores.length > 0
     .alert.alert-danger
@@ -15,37 +13,37 @@ block content
         each err in errores
           li= err
 
-  form(method='post', action=actionUrl, novalidate)
-    .mb-3
-      label.form-label(for='nombre') Nombre
-      input#nombre.form-control(type='text', name='nombre', value=curso.nombre, maxlength='45', required)
-      .form-text Hasta 45 caracteres.
+  .fcad-card
+    form(method='post', action=actionUrl, novalidate)
+      .mb-3
+        label.form-label(for='nombre') Nombre:
+        input#nombre.form-control(type='text', name='nombre', value=curso.nombre, maxlength='45', required)
+        .form-text Hasta 45 caracteres.
 
-    .mb-3
-      label.form-label(for='descripcion') Descripción
-      textarea#descripcion.form-control(name='descripcion', rows='4', required)= curso.descripcion
+      .mb-3
+        label.form-label(for='descripcion') Descripción:
+        textarea#descripcion.form-control(name='descripcion', rows='3', required)= curso.descripcion
 
-    .row
-      .col-md-4.mb-3
-        label.form-label(for='fecha_inicio') Fecha de inicio
+      .mb-3
+        label.form-label(for='fecha_inicio') Fecha de Inicio:
         input#fecha_inicio.form-control(type='date', name='fecha_inicio', value=curso.fecha_inicio, required)
 
-      .col-md-4.mb-3
-        label.form-label(for='cantidad_horas') Cantidad de horas
+      .mb-3
+        label.form-label(for='cantidad_horas') Cantidad de Horas:
         input#cantidad_horas.form-control(type='number', name='cantidad_horas', min='0', step='1', value=curso.cantidad_horas, required)
 
-      .col-md-4.mb-3
-        label.form-label(for='inscriptos_max') Inscriptos máximos
+      .mb-3
+        label.form-label(for='inscriptos_max') Máxima Cantidad de Inscriptos:
         input#inscriptos_max.form-control(type='number', name='inscriptos_max', min='0', step='1', value=curso.inscriptos_max, required)
 
-    .mb-4
-      label.form-label(for='id_curso_estado') Estado
-      select#id_curso_estado.form-select(name='id_curso_estado', required)
-        option(value='', disabled, selected=!curso.id_curso_estado) -- Seleccione --
-        each est in estados
-          option(value=est.id_curso_estado, selected=(String(est.id_curso_estado) === String(curso.id_curso_estado)))
-            = est.descripcion
+      .mb-4
+        label.form-label(for='id_curso_estado') Estado:
+        select#id_curso_estado.form-select(name='id_curso_estado', required)
+          option(value='', disabled, selected=!curso.id_curso_estado) -- Seleccione --
+          each est in estados
+            option(value=est.id_curso_estado, selected=(String(est.id_curso_estado) === String(curso.id_curso_estado)))
+              = est.descripcion
 
-    .d-flex.gap-2
-      button.btn.btn-primary(type='submit')= esEditar ? 'Guardar cambios' : 'Crear curso'
-      a.btn.btn-outline-secondary(href='/cursos') Cancelar
+      .d-flex.gap-2
+        button#btnGuardar.btn.btn-primary(type='submit')= esEditar ? 'Guardar cambios' : 'Crear Curso'
+        a.btn.btn-outline-secondary(href='/cursos') Volver
