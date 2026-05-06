@@ -1,13 +1,15 @@
 var express = require('express');
 var router = express.Router();
 var cursosController = require('../controllers/cursosController');
+var asyncHandler = require('../middleware/asyncHandler');
+var validateIdParam = require('../middleware/validateIdParam');
 
-router.get('/', cursosController.browse);
-router.get('/nuevo', cursosController.addForm);
-router.post('/', cursosController.add);
-router.get('/:id(\\d+)', cursosController.read);
-router.get('/:id(\\d+)/editar', cursosController.editForm);
-router.put('/:id(\\d+)', cursosController.edit);
-router.delete('/:id(\\d+)', cursosController.remove);
+router.get('/', asyncHandler(cursosController.browse));
+router.get('/nuevo', asyncHandler(cursosController.addForm));
+router.post('/', asyncHandler(cursosController.add));
+router.get('/:id(\\d+)', validateIdParam('id'), asyncHandler(cursosController.read));
+router.get('/:id(\\d+)/editar', validateIdParam('id'), asyncHandler(cursosController.editForm));
+router.put('/:id(\\d+)', validateIdParam('id'), asyncHandler(cursosController.edit));
+router.delete('/:id(\\d+)', validateIdParam('id'), asyncHandler(cursosController.remove));
 
 module.exports = router;
