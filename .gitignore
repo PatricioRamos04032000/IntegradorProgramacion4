@@ -1,5 +1,6 @@
 # Dependencias Node
 node_modules/
+Proyecto/node_modules/
 
 # Variables de entorno (datos sensibles)
 .env

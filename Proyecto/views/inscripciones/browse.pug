@@ -1,0 +1,56 @@
+extends ../layout
+
+block content
+  .container.mt-4
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1= title
+      a.btn.btn-primary(href='/inscripciones/nuevo') Nueva Inscripción
+
+    //- Buscador
+    form(action='/inscripciones', method='GET', class='mb-4')
+      .input-group
+        input.form-control(type='text', name='q', value=searchQuery, placeholder='Buscar por documento o curso...')
+        button.btn.btn-outline-secondary(type='submit') Buscar
+        if searchQuery
+          a.btn.btn-outline-danger(href='/inscripciones') Limpiar
+
+    //- Tabla BROWSE
+    .table-responsive
+      table.table.table-striped.table-hover
+        thead.table-dark
+          tr
+            th Fecha de Alta
+            th Curso
+            th Estudiante
+            th Documento
+            th Acciones
+        tbody
+          if inscripciones.length > 0
+            each ins in inscripciones
+              tr
+                //- Formateamos la fecha si viene como objeto Date de PostgreSQL
+                td= new Date(ins.fecha_hora_inscripcion).toLocaleDateString()
+                td= ins.curso_nombre
+                td #{ins.apellido}, #{ins.nombres}
+                td= ins.documento
+                td
+                  //- Acción READ
+                  a.btn.btn-sm.btn-info.me-2(href=`/inscripciones/${ins.id_inscripcion}`) Ver Diploma
+                  
+                  //- Acción DELETE (Soft Delete con method-override)
+                  form(action=`/inscripciones/${ins.id_inscripcion}?_method=DELETE`, method='POST', class='d-inline', onsubmit="return confirm('¿Estás seguro de dar de baja esta inscripción?');")
+                    button.btn.btn-sm.btn-danger(type='submit') Dar de Baja
+          else
+            tr
+              td(colspan="5", class="text-center") No se encontraron inscripciones activas.
+
+    //- Paginación
+    if inscripciones.length > 0
+      nav(aria-label='Navegación de páginas')
+        ul.pagination.justify-content-center
+          li.page-item(class=(page == 1 ? 'disabled' : ''))
+            a.page-link(href=`/inscripciones?page=${page - 1}&q=${searchQuery}&pageSize=${pageSize}`) Anterior
+          li.page-item.active
+            span.page-link Página #{page}
+          li.page-item(class=(inscripciones.length < pageSize ? 'disabled' : ''))
+            a.page-link(href=`/inscripciones?page=${page + 1}&q=${searchQuery}&pageSize=${pageSize}`) Siguiente

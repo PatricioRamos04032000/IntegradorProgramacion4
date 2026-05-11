@@ -11,6 +11,9 @@ var usersRouter = require('./routes/users');
 var cursosRouter = require('./routes/cursos');
 var errorHandlers = require('./middleware/errorHandlers');
 
+const estudiantesRouter = require('./routes/estudiantes');
+const inscripcionesRouter = require('./routes/inscripciones');
+
 var app = express();
 
 app.set('views', path.join(__dirname, 'views'));
@@ -26,6 +29,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/cursos', cursosRouter);
+app.use('/estudiantes', estudiantesRouter);
+app.use('/inscripciones', inscripcionesRouter);
 
 app.use(errorHandlers.notFoundHandler);
 app.use(errorHandlers.errorHandler);

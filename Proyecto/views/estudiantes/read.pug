@@ -1,0 +1,30 @@
+extends ../layout
+
+block content
+  .container.mt-4
+    .card
+      .card-header.bg-info.text-white
+        h2.h4.mb-0= title
+      .card-body
+        .row.mb-3
+          .col-md-6
+            strong Documento: 
+            span= estudiante.documento
+          .col-md-6
+            strong Fecha de Nacimiento: 
+            span= estudiante.fecha_nacimiento 
+        .row.mb-3
+          .col-md-6
+            strong Apellido: 
+            span= estudiante.apellido
+          .col-md-6
+            strong Nombres: 
+            span= estudiante.nombres
+        .row.mb-3
+          .col-md-12
+            strong Correo Electrónico: 
+            span= estudiante.email
+        
+        .d-flex.justify-content-end.mt-4
+          a.btn.btn-secondary.me-2(href='/estudiantes') Volver al listado
+          a.btn.btn-warning(href=`/estudiantes/${estudiante.id_estudiante}/editar`) Editar Estudiante

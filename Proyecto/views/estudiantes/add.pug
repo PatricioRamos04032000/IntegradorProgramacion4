@@ -1,0 +1,31 @@
+extends ../layout
+
+block content
+  .container.mt-4
+    h1= title
+    
+    //- El formulario apunta a la ruta POST /estudiantes
+    form(action='/estudiantes', method='POST')
+      .row
+        .col-md-6.mb-3
+          label.form-label(for='documento') Documento
+          input#documento.form-control(type='text', name='documento', required)
+        .col-md-6.mb-3
+          label.form-label(for='fecha_nacimiento') Fecha de Nacimiento
+          input#fecha_nacimiento.form-control(type='date', name='fecha_nacimiento', required)
+          
+      .row
+        .col-md-6.mb-3
+          label.form-label(for='apellido') Apellido
+          input#apellido.form-control(type='text', name='apellido', required)
+        .col-md-6.mb-3
+          label.form-label(for='nombres') Nombres
+          input#nombres.form-control(type='text', name='nombres', required)
+          
+      .mb-3
+        label.form-label(for='email') Correo Electrónico
+        input#email.form-control(type='email', name='email', required)
+      
+      .d-flex.justify-content-end.mt-4
+        a.btn.btn-secondary.me-2(href='/estudiantes') Cancelar
+        button.btn.btn-primary(type='submit') Guardar Estudiante
