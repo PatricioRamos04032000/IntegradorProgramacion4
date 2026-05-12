@@ -35,7 +35,7 @@ block content
                 td= ins.documento
                 td
                   //- Acción READ
-                  a.btn.btn-sm.btn-info.me-2(href=`/inscripciones/${ins.id_inscripcion}`) Ver Diploma
+                  a.btn.btn-sm.btn-info.me-2(href=`/inscripciones/${ins.id_inscripcion}`) Ver Certificado
                   
                   //- Acción DELETE (Soft Delete con method-override)
                   form(action=`/inscripciones/${ins.id_inscripcion}?_method=DELETE`, method='POST', class='d-inline', onsubmit="return confirm('¿Estás seguro de dar de baja esta inscripción?');")
@@ -45,6 +45,7 @@ block content
               td(colspan="5", class="text-center") No se encontraron inscripciones activas.
 
     //- Paginación
+    
     if inscripciones.length > 0
       nav(aria-label='Navegación de páginas')
         ul.pagination.justify-content-center

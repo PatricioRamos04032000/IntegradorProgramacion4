@@ -91,3 +91,47 @@
     width: 100%;
   }
 }
+
+
+/* Configuración del Sidebar (Menú Vertical) */
+.sidebar {
+  width: 280px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #273244;
+}
+
+.sidebar-mobile {
+  background-color: #273244;
+}
+
+.nav-link {
+  color: #9cafbf;
+  border-radius: 0.5rem;
+  margin-bottom: 0.25rem;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  background-color: #aecae7;
+  color: #2d3645;
+}
+
+/* El enlace activo se pinta de azul */
+.nav-link.active {
+  background-color: #0d6efd !important;
+  color: white !important;
+}
+
+/* Efecto 3D para las tarjetas de los cursos */
+.curso-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.curso-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+}
