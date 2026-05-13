@@ -8,12 +8,13 @@ Trabajo Final Integrador de **Programación IV (FCAD – UNER)**, 1er cuatrimest
 ## Stack
 
 - **Runtime:** Node.js (≥ 18 recomendado)
-- **Servidor web:** Express 4
-- **Vistas:** Pug (server-side rendering)
-- **UI:** Bootstrap 5 (vía CDN, diseño responsivo)
-- **Base de datos:** PostgreSQL 17 (driver oficial `pg`)
+- **API:** Express 4 (JSON REST; sin vistas en servidor)
+- **Front:** HTML + CSS + JavaScript estático en `Proyecto/web/` (consumo de la API con `fetch`)
+- **UI:** Bootstrap 5 (CDN en las páginas HTML)
+- **Base de datos:** PostgreSQL (driver oficial `pg`)
+- **Autenticación:** JWT (`Authorization: Bearer …`)
 - **Configuración:** `dotenv`
-- **Method override:** `method-override` (para `PUT`/`DELETE` desde formularios HTML)
+- **CORS:** paquete `cors` en `Proyecto/api/app.js`, origen desde `FRONT_ORIGIN`
 
 ## Estructura del repositorio
 
@@ -21,18 +22,25 @@ Trabajo Final Integrador de **Programación IV (FCAD – UNER)**, 1er cuatrimest
 .
 ├── dump base programacion.sql       Dump de la BD (esquema + datos de prueba)
 ├── README.md
+├── comousarellogin.txt              Ejemplos de login y fetch con JWT
 ├── IntegradorProgramacion4.slnx     Solución de Visual Studio
 └── Proyecto/
-    ├── app.js                       Configuración de Express
-    ├── bin/www                      Entrypoint (npm start)
-    ├── db/pool.js                   Pool de conexiones a PostgreSQL
-    ├── models/cursoModel.js         Queries SQL parametrizadas
-    ├── controllers/cursosController.js
-    ├── routes/                      index.js, users.js, cursos.js
-    ├── views/                       layout.pug, error.pug, cursos/*.pug
-    ├── public/                      Assets estáticos
-    ├── .env                         Variables de entorno (no se commitea)
-    └── .env.example                 Plantilla de variables de entorno
+    ├── api/                         Backend Node (Express + capas)
+    │   ├── app.js
+    │   ├── bin/www
+    │   ├── controllers/
+    │   ├── services/
+    │   ├── repositories/
+    │   ├── routes/
+    │   ├── middleware/
+    │   ├── db/
+    │   ├── package.json
+    │   ├── .env                     (no se commitea)
+    │   └── .env.example
+    └── web/                         Front estático (HTML, css/, js/)
+        ├── index.html
+        ├── login.html
+        └── …
 ```
 
 ## Puesta en marcha
@@ -53,67 +61,65 @@ psql -U postgres -d programacion4 -f "dump base programacion.sql"
 
 ### 2. Configurar variables de entorno
 
-Desde la carpeta `Proyecto/`, copiá el archivo de ejemplo y ajustá según tu instalación:
+Desde la carpeta `Proyecto/api/`, copiá el archivo de ejemplo y ajustá según tu instalación:
 
 ```bash
+cd Proyecto/api
 cp .env.example .env
 ```
 
-Variables disponibles:
+Variables relevantes:
 
 | Variable          | Default       | Descripción                                              |
 | ----------------- | ------------- | -------------------------------------------------------- |
-| `PORT`            | `3000`        | Puerto donde escucha la app.                             |
-| `DB_HOST`         | `localhost`   | Host de PostgreSQL.                                      |
-| `DB_PORT`         | `5432`        | Puerto de PostgreSQL.                                    |
-| `DB_USER`         | `postgres`    | Usuario de PostgreSQL.                                   |
-| `DB_PASSWORD`     | `postgres`    | Contraseña de PostgreSQL.                                |
-| `DB_NAME`         | `programacion4` | Nombre de la base.                                     |
-| `DEFAULT_USER_ID` | `1`           | Usuario que se registra como autor de cada modificación mientras no exista login. |
+| `PORT`            | `3000`        | Puerto donde escucha la API.                           |
+| `FRONT_ORIGIN`    | `http://127.0.0.1:5500` | Origen permitido por CORS (debe coincidir con Live Server u otro host del front). |
+| `DB_*`            | …             | Conexión a PostgreSQL.                                  |
+| `JWT_SECRET`      | …             | Firma de tokens JWT.                                    |
+| `DEFAULT_USER_ID` | `1`           | Reservado para auditoría si alguna ruta no usa JWT.     |
 
-> **Importante:** `.env` está en el `.gitignore` y no se sube al repo. `DEFAULT_USER_ID` debe existir en la tabla `usuarios`.
+> **Importante:** `.env` está en el `.gitignore` y no se sube al repo.
 
-### 3. Instalar dependencias y ejecutar
-
-Desde la carpeta `Proyecto/`:
+### 3. Instalar dependencias y levantar la API
 
 ```bash
+cd Proyecto/api
 npm install
 npm start
 ```
 
-La aplicación queda disponible en [http://localhost:3000](http://localhost:3000) y redirige a `/cursos`.
+La API queda en [http://localhost:3000](http://localhost:3000) (ajustá el puerto con `PORT`).
 
-## Funcionalidades del primer entregable
+### 4. Levantar el front estático
 
-URL base: `/cursos`.
+Abrí la carpeta `Proyecto/web` con **Live Server** (VS Code / Cursor) o serví los archivos con:
 
-| Método HTTP | Ruta                     | Acción                                                  |
-| ----------- | ------------------------ | ------------------------------------------------------- |
-| `GET`       | `/cursos`                | Browse: lista paginada con búsqueda por nombre y filtro por estado. Querystring: `q`, `estado`, `page`, `pageSize`. |
-| `GET`       | `/cursos/nuevo`          | Formulario de alta.                                     |
-| `POST`      | `/cursos`                | Add: crea un curso.                                     |
-| `GET`       | `/cursos/:id`            | Read: detalle de un curso.                              |
-| `GET`       | `/cursos/:id/editar`     | Formulario de edición.                                  |
-| `PUT`       | `/cursos/:id`            | Edit (vía `method-override` con `?_method=PUT`).        |
-| `DELETE`    | `/cursos/:id`            | Soft delete (vía `method-override` con `?_method=DELETE`). |
+```bash
+npx serve Proyecto/web
+```
 
-### Soft delete
+Editá `Proyecto/web/js/config.js` si la API no corre en `http://localhost:3000`. El valor de `FRONT_ORIGIN` en `.env` de la API debe coincidir con la URL desde la que abrís el HTML (incluido `http://127.0.0.1` vs `http://localhost`).
 
-No se hace `DELETE` físico. El borrado actualiza `id_curso_estado = 4` (estado `ELIMINADO`, `es_activo = 0`).
-El listado del browse esconde por defecto los cursos cuyo estado tiene `es_activo = 0`, así que un curso "eliminado" desaparece de la vista pero queda en la base.
+## Rutas API (resumen)
+
+Autenticación: `POST /login` con JSON `{ nombre_usuario, contrasenia }` → `{ token, user }`.
+
+El resto de rutas de negocio requieren cabecera `Authorization: Bearer <token>`.
+
+| Recurso        | Métodos principales |
+| -------------- | -------------------- |
+| `/`            | `GET` — dashboard (totales y últimos cursos) |
+| `/cursos`      | `GET` (lista + `estados`), `POST`, `GET /:id`, `PUT /:id`, `DELETE /:id` |
+| `/estudiantes` | `GET`, `POST`, `GET /:id`, `PUT /:id`, `DELETE /:id` |
+| `/inscripciones` | `GET`, `POST`, `GET /:id`, `GET /:id/certificado` (PDF), `DELETE /:id` |
+
+Los cuerpos de `POST`/`PUT` son JSON (mismos nombres de campos que antes en los formularios: p. ej. `fecha_inicio`, `id_curso_estado` en cursos).
+
+### Soft delete (cursos)
+
+No se hace `DELETE` físico. El borrado actualiza `id_curso_estado = 4` (estado eliminado, `es_activo = 0`).
+El listado oculta cursos cuyo estado tiene `es_activo = 0`.
 
 ### Auditoría
 
-Cada `INSERT` / `UPDATE` setea:
-
-- `id_usuario_modificacion = $DEFAULT_USER_ID` (mientras no exista login).
-- `fecha_hora_modificacion = NOW()`.
-
-## Lo que queda fuera de esta entrega
-
-- Login + JWT y reemplazo de `DEFAULT_USER_ID` por el usuario autenticado.
-- BREAD de estudiantes e inscripciones (con control de cupo `inscriptos_max` y de estado del curso).
-- Dashboard con totales y links rápidos.
-- Generación / impresión de diplomas en PDF.
-- Tests automatizados.
+Cada `INSERT` / `UPDATE` setea `id_usuario_modificacion` con el usuario del JWT (`req.user.id_usuario`).

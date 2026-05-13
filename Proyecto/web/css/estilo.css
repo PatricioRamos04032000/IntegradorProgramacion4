@@ -1,0 +1,55 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.fcad-header {
+  background-color: rgb(64, 3, 64);
+  color: #fff;
+}
+
+.fcad-titulo {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+.fcad-contenedor-principal {
+  display: flex;
+  min-height: calc(100vh - 72px);
+}
+
+.fcad-nav {
+  width: min(260px, 100%);
+  background-color: rgb(43, 1, 43);
+}
+
+.fcad-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fcad-nav ul li a {
+  display: block;
+  padding: 0.85rem 1.25rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.fcad-nav ul li a:hover {
+  background-color: rgb(95, 7, 95);
+}
+
+.fcad-main {
+  flex: 1;
+  background-color: #fff;
+}
+
+@media (max-width: 992px) {
+  .fcad-contenedor-principal {
+    flex-direction: column;
+  }
+
+  .fcad-nav {
+    width: 100%;
+  }
+}
