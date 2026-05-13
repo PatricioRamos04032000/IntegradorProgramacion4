@@ -8,7 +8,7 @@ function showError(msg) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const data = await api.get('/');
+    const data = await api.get('/dashboard');
     if (!data) return;
     document.getElementById('total-cursos').textContent = data.totalCursos;
     document.getElementById('total-estudiantes').textContent = data.totalEstudiantes;

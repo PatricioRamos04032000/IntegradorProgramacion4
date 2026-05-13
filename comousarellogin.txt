@@ -20,6 +20,7 @@ fetch(API_BASE + '/estudiantes', {
 });
 //
 // Notas
-// - El panel GET / y el resto de recursos (cursos, estudiantes, inscripciones) requieren Bearer salvo POST /login.
+// - Abrí http://localhost:3000/ → redirige a login. El panel (JSON) es GET /dashboard con Bearer.
+// - Cursos, estudiantes e inscripciones requieren Bearer salvo POST /login.
 // - JWT_SECRET debe ser una cadena larga y aleatoria en producción.
 // - El front estático no tiene package.json: abrí Proyecto/web con Live Server o `npx serve Proyecto/web`.

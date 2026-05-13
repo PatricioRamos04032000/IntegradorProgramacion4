@@ -1,16 +1,18 @@
 require('dotenv').config();
 
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
-const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const cursosRouter = require('./routes/cursos');
 const authRouter = require('./routes/auth');
 const errorHandlers = require('./middleware/errorHandlers');
 const jwtAuth = require('./middleware/jwtAuth');
+const asyncHandler = require('./middleware/asyncHandler');
+const dashboardController = require('./controllers/dashboardController');
 
 const estudiantesRouter = require('./routes/estudiantes');
 const inscripcionesRouter = require('./routes/inscripciones');
@@ -31,8 +33,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+const webRoot = path.join(__dirname, '..', 'web');
+
 app.use('/', authRouter);
-app.use('/', jwtAuth, indexRouter);
+
+// Raíz: siempre login (el panel es /index.html; los datos del panel vienen de GET /dashboard en JSON).
+app.get('/', (req, res) => {
+  res.redirect(302, '/login.html');
+});
+
+app.get('/dashboard', jwtAuth, asyncHandler(dashboardController.getDashboard));
+
+app.use(express.static(webRoot));
+
 app.use('/users', usersRouter);
 app.use('/cursos', jwtAuth, cursosRouter);
 app.use('/estudiantes', jwtAuth, estudiantesRouter);

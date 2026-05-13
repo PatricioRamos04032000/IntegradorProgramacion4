@@ -92,7 +92,7 @@ Cliente (navegador)
 
 | Archivo | Montaje en `app.js` | Responsabilidad |
 |---------|---------------------|-----------------|
-| `index.js` | `/` (con `jwtAuth`) | Dashboard JSON: totales y últimos cursos. |
+| *(ver `app.js`)* | `/` | `GET /` redirige a `/login.html`. `GET /dashboard` + JWT devuelve JSON del panel. `express.static` sirve `Proyecto/web/`. |
 | `users.js` | `/users` | Placeholder del generador Express (`respond with a resource`). |
 | `cursos.js` | `/cursos` | BREAD de cursos con `asyncHandler` y `validateIdParam('id')` en rutas con `:id`. |
 | `estudiantes.js` | `/estudiantes` | CRUD JSON; rutas con `/:id(\\d+)` y `validateIdParam`. |
@@ -146,7 +146,12 @@ Cliente (navegador)
 
 ## 5. Rutas HTTP resumidas (referencia rápida)
 
-Todas las rutas de negocio (salvo `POST /login`) esperan cabecera `Authorization: Bearer <JWT>`.
+Todas las rutas de negocio (salvo `POST /login`, `GET /` y archivos estáticos) esperan cabecera `Authorization: Bearer <JWT>`. El panel en JSON es **`GET /dashboard`**.
+
+### Raíz y panel
+
+- `GET /` — redirección a `/login.html`.
+- `GET /dashboard` — totales y últimos cursos (JSON, con JWT).
 
 ### Cursos (`/cursos`)
 

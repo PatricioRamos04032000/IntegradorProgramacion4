@@ -90,15 +90,17 @@ npm start
 
 La API queda en [http://localhost:3000](http://localhost:3000) (ajustá el puerto con `PORT`).
 
-### 4. Levantar el front estático
+### 4. Levantar el front
 
-Abrí la carpeta `Proyecto/web` con **Live Server** (VS Code / Cursor) o serví los archivos con:
+Con la API en marcha (`npm start`), abrí **http://localhost:3000/**: te redirige a **login**. Tras iniciar sesión vas al panel (`index.html`), que pide los datos con **`GET /dashboard`** (JSON con JWT).
+
+También podés abrir solo la carpeta `Proyecto/web` con **Live Server** u otro servidor estático:
 
 ```bash
 npx serve Proyecto/web
 ```
 
-Editá `Proyecto/web/js/config.js` si la API no corre en `http://localhost:3000`. El valor de `FRONT_ORIGIN` en `.env` de la API debe coincidir con la URL desde la que abrís el HTML (incluido `http://127.0.0.1` vs `http://localhost`).
+En ese caso ajustá `FRONT_ORIGIN` en `.env` y la URL en `Proyecto/web/js/config.js` para que coincidan con el origen del front (incluido `http://127.0.0.1` vs `http://localhost`).
 
 ## Rutas API (resumen)
 
@@ -108,7 +110,8 @@ El resto de rutas de negocio requieren cabecera `Authorization: Bearer <token>`.
 
 | Recurso        | Métodos principales |
 | -------------- | -------------------- |
-| `/`            | `GET` — dashboard (totales y últimos cursos) |
+| `/`            | `GET` — redirección a `/login.html` |
+| `/dashboard`   | `GET` — JSON del panel (requiere `Bearer`) |
 | `/cursos`      | `GET` (lista + `estados`), `POST`, `GET /:id`, `PUT /:id`, `DELETE /:id` |
 | `/estudiantes` | `GET`, `POST`, `GET /:id`, `PUT /:id`, `DELETE /:id` |
 | `/inscripciones` | `GET`, `POST`, `GET /:id`, `GET /:id/certificado` (PDF), `DELETE /:id` |

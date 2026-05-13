@@ -1,5 +1,5 @@
 import { API_BASE } from './config.js';
-import { setToken } from './auth.js';
+import { getToken, setToken } from './auth.js';
 
 function showError(msg) {
   const el = document.getElementById('error');
@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   if (params.get('logout') === '1') {
     sessionStorage.removeItem('token');
+  }
+
+  if (getToken()) {
+    window.location.replace('index.html');
+    return;
   }
 
   document.getElementById('form-login').addEventListener('submit', async (e) => {
