@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cursos - FCAD UNER</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/estilo.css">
+  <script src="js/bootstrap.bundle.min.js"></script>
   <script src="js/nav.js" type="module" defer></script>
   <script src="js/cursos.js" type="module" defer></script>
 </head>
@@ -25,15 +26,14 @@
     </nav>
     <main class="fcad-main p-4">
       <h2 class="h4 mb-3">Cursos</h2>
-      <div id="error" class="alert alert-danger" style="display: none" role="alert"></div>
       <form class="row g-2 mb-3" id="filtros">
         <div class="col-md-4">
-          <label class="form-label" for="q">Buscar</label>
-          <input type="text" class="form-control" id="q" name="q" placeholder="Nombre">
+          <label class="form-label" for="nombre">Buscar</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre">
         </div>
         <div class="col-md-4">
-          <label class="form-label" for="estado">Estado</label>
-          <select class="form-select" id="estado" name="estado"></select>
+          <label class="form-label" for="idCursoEstado">Estado</label>
+          <select class="form-select" id="idCursoEstado" name="idCursoEstado"></select>
         </div>
         <div class="col-md-2 d-flex align-items-end">
           <button type="submit" class="btn btn-outline-primary w-100">Filtrar</button>
@@ -47,7 +47,7 @@
               <th>Nombre</th>
               <th>Inicio</th>
               <th>Horas</th>
-              <th>Máx. inscriptos</th>
+              <th>Max. inscriptos</th>
               <th>Estado</th>
               <th></th>
             </tr>
@@ -66,6 +66,20 @@
         <a class="btn btn-primary" href="cursos-nuevo.html">Nuevo curso</a>
       </div>
     </main>
+  </div>
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="errorModalLabel">Error</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" id="errorModalBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>

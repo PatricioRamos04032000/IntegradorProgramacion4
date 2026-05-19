@@ -6,33 +6,40 @@ function idFromQuery() {
 }
 
 function showError(msg) {
-  const el = document.getElementById('error');
-  el.textContent = msg;
-  el.style.display = 'block';
+  const el = document.getElementById('errorModal');
+  document.getElementById('errorModalBody').textContent = msg;
+  const modal = new bootstrap.Modal(el);
+  el.addEventListener('hide.bs.modal', () => document.activeElement?.blur(), { once: true });
+  modal.show();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   const id = idFromQuery();
   if (!id) {
-    showError('Falta el parámetro id en la URL.');
+    showError('Falta el parametro id en la URL.');
     return;
   }
 
   try {
-    const data = await api.get(`/cursos/${id}`);
-    if (!data) return;
-    const c = data.curso;
-    document.getElementById('nombre').value = c.nombre || '';
-    document.getElementById('descripcion').value = c.descripcion || '';
-    document.getElementById('fecha_inicio').value = c.fecha_inicio || '';
-    document.getElementById('cantidad_horas').value = c.cantidad_horas ?? '';
-    document.getElementById('inscriptos_max').value = c.inscriptos_max ?? '';
+    const [curso, estados] = await Promise.all([
+      api.get(`/api/v2/cursos/${id}`),
+      api.get('/api/v2/cursos/estados'),
+    ]);
+    if (!curso || !estados) return;
 
-    const sel = document.getElementById('id_curso_estado');
+    document.getElementById('nombre').value = curso.nombre || '';
+    document.getElementById('descripcion').value = curso.descripcion || '';
+    document.getElementById('fechaInicio').value = curso.fechaInicio
+      ? new Date(curso.fechaInicio).toISOString().slice(0, 10)
+      : '';
+    document.getElementById('cantidadHoras').value = curso.cantidadHoras ?? '';
+    document.getElementById('inscriptosMax').value = curso.inscriptosMax ?? '';
+
+    const sel = document.getElementById('idCursoEstado');
     sel.innerHTML = '';
-    (data.estados || []).forEach((e) => {
-      const opt = new Option(e.descripcion, String(e.id_curso_estado));
-      if (String(e.id_curso_estado) === String(c.id_curso_estado)) opt.selected = true;
+    estados.forEach((e) => {
+      const opt = new Option(e.descripcion, String(e.idCursoEstado));
+      if (String(e.idCursoEstado) === String(curso.idCursoEstado)) opt.selected = true;
       sel.appendChild(opt);
     });
   } catch (e) {
@@ -42,21 +49,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    document.getElementById('error').style.display = 'none';
     const body = {
       nombre: document.getElementById('nombre').value.trim(),
       descripcion: document.getElementById('descripcion').value.trim(),
-      fecha_inicio: document.getElementById('fecha_inicio').value,
-      cantidad_horas: Number(document.getElementById('cantidad_horas').value),
-      inscriptos_max: Number(document.getElementById('inscriptos_max').value),
-      id_curso_estado: Number(document.getElementById('id_curso_estado').value),
+      fechaInicio: document.getElementById('fechaInicio').value,
+      cantidadHoras: Number(document.getElementById('cantidadHoras').value),
+      inscriptosMax: Number(document.getElementById('inscriptosMax').value),
+      idCursoEstado: Number(document.getElementById('idCursoEstado').value),
     };
     try {
-      await api.put(`/cursos/${id}`, body);
+      await api.put(`/api/v2/cursos/${id}`, body);
       window.location.href = `cursos-detalle.html?id=${id}`;
     } catch (err) {
       const b = err.body || {};
-      if (b.errores && b.errores.length) {
+      if (b.errors && b.errors.length) {
+        showError(b.errors.map((e) => e.msg || e).join(' '));
+      } else if (b.errores && b.errores.length) {
         showError(b.errores.join(' '));
       } else {
         showError(err.message || 'Error al guardar.');

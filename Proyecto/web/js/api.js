@@ -37,6 +37,7 @@ async function request(path, options = {}) {
   if (!res.ok) {
     const msg =
       data.error ||
+      (Array.isArray(data.errors) && data.errors.length ? data.errors.map(e => e.msg || e).join(' ') : null) ||
       (Array.isArray(data.errores) && data.errores.length ? data.errores.join(' ') : null) ||
       `Error ${res.status}`;
     const err = new Error(msg);

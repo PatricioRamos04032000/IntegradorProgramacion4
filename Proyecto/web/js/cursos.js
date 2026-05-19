@@ -1,71 +1,77 @@
 import { api } from './api.js';
 
-let page = 1;
 const pageSize = 10;
+let offset = 0;
+let estadosCargados = false;
 
 function qs() {
-  const q = document.getElementById('q').value.trim();
-  const estado = document.getElementById('estado').value;
+  const nombre = document.getElementById('nombre').value.trim();
+  const idCursoEstado = document.getElementById('idCursoEstado').value;
   const p = new URLSearchParams();
-  if (q) p.set('q', q);
-  if (estado) p.set('estado', estado);
-  p.set('page', String(page));
-  p.set('pageSize', String(pageSize));
+  if (nombre) p.set('nombre', nombre);
+  if (idCursoEstado) p.set('idCursoEstado', idCursoEstado);
+  p.set('limit', String(pageSize));
+  p.set('offset', String(offset));
   return p.toString();
 }
 
 function showError(msg) {
-  const el = document.getElementById('error');
-  el.textContent = msg;
-  el.style.display = 'block';
+  const el = document.getElementById('errorModal');
+  document.getElementById('errorModalBody').textContent = msg;
+  const modal = new bootstrap.Modal(el);
+  el.addEventListener('hide.bs.modal', () => document.activeElement?.blur(), { once: true });
+  modal.show();
+}
+
+async function cargarEstados() {
+  if (estadosCargados) return;
+  try {
+    const estados = await api.get('/api/v2/cursos/estados');
+    if (!estados) return;
+    const sel = document.getElementById('idCursoEstado');
+    sel.appendChild(new Option('Todos', ''));
+    estados.forEach((e) => {
+      sel.appendChild(new Option(e.descripcion, String(e.idCursoEstado)));
+    });
+    estadosCargados = true;
+  } catch (e) {
+    showError(e.message || 'Error al cargar estados.');
+  }
 }
 
 async function cargar() {
-  document.getElementById('error').style.display = 'none';
   try {
-    const data = await api.get(`/cursos?${qs()}`);
-    if (!data) return;
+    await cargarEstados();
 
-    const sel = document.getElementById('estado');
-    if (sel.options.length === 0) {
-      sel.appendChild(new Option('Todos', ''));
-      (data.estados || []).forEach((e) => {
-        sel.appendChild(new Option(e.descripcion, String(e.id_curso_estado)));
-      });
-      if (data.filtros && data.filtros.estado) {
-        sel.value = String(data.filtros.estado);
-      }
-      if (data.filtros && data.filtros.q) {
-        document.getElementById('q').value = data.filtros.q;
-      }
-    }
+    const data = await api.get(`/api/v2/cursos?${qs()}`);
+    if (!data) return;
 
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
     (data.items || []).forEach((c) => {
       const tr = document.createElement('tr');
-      const fi = c.fecha_inicio ? new Date(c.fecha_inicio).toLocaleDateString('es-AR') : '—';
+      const fi = c.fechaInicio ? new Date(c.fechaInicio).toLocaleDateString('es-AR') : '\u2014';
       tr.innerHTML = `
-        <td>${c.id_curso}</td>
+        <td>${c.idCurso}</td>
         <td>${c.nombre}</td>
         <td>${fi}</td>
-        <td>${c.cantidad_horas}</td>
-        <td>${c.inscriptos_max}</td>
+        <td>${c.cantidadHoras}</td>
+        <td>${c.inscriptosMax}</td>
         <td>${c.estado || ''}</td>
         <td>
-          <a class="btn btn-sm btn-outline-primary" href="cursos-detalle.html?id=${c.id_curso}">Ver</a>
-          <a class="btn btn-sm btn-outline-secondary" href="cursos-editar.html?id=${c.id_curso}">Editar</a>
-          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${c.id_curso}">Eliminar</button>
+          <a class="btn btn-sm btn-outline-primary" href="cursos-detalle.html?id=${c.idCurso}">Ver</a>
+          <a class="btn btn-sm btn-outline-secondary" href="cursos-editar.html?id=${c.idCurso}">Editar</a>
+          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${c.idCurso}">Eliminar</button>
         </td>`;
       tbody.appendChild(tr);
     });
 
     document.querySelectorAll('.btn-del').forEach((btn) => {
       btn.addEventListener('click', async () => {
-        if (!window.confirm('¿Eliminar este curso?')) return;
+        if (!window.confirm('\u00bfEliminar este curso?')) return;
         const id = btn.getAttribute('data-id');
         try {
-          await api.del(`/cursos/${id}`);
+          await api.del(`/api/v2/cursos/${id}`);
           await cargar();
         } catch (e) {
           showError(e.message || 'No se pudo eliminar.');
@@ -73,9 +79,13 @@ async function cargar() {
       });
     });
 
-    document.getElementById('pag-info').textContent = `Página ${data.page} de ${data.totalPages} (${data.total} resultados)`;
-    document.getElementById('btn-prev').disabled = data.page <= 1;
-    document.getElementById('btn-next').disabled = data.page >= data.totalPages;
+    const total = data.total || 0;
+    const currentPage = Math.floor(offset / pageSize) + 1;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    document.getElementById('pag-info').textContent = `P\u00e1gina ${currentPage} de ${totalPages} (${total} resultados)`;
+    document.getElementById('btn-prev').disabled = offset <= 0;
+    document.getElementById('btn-next').disabled = offset + pageSize >= total;
   } catch (e) {
     showError(e.message || 'Error al cargar cursos.');
   }
@@ -84,17 +94,17 @@ async function cargar() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filtros').addEventListener('submit', (e) => {
     e.preventDefault();
-    page = 1;
+    offset = 0;
     cargar();
   });
   document.getElementById('btn-prev').addEventListener('click', () => {
-    if (page > 1) {
-      page -= 1;
+    if (offset >= pageSize) {
+      offset -= pageSize;
       cargar();
     }
   });
   document.getElementById('btn-next').addEventListener('click', () => {
-    page += 1;
+    offset += pageSize;
     cargar();
   });
   cargar();

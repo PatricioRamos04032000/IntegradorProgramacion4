@@ -6,9 +6,11 @@ function idFromQuery() {
 }
 
 function showError(msg) {
-  const el = document.getElementById('error');
-  el.textContent = msg;
-  el.style.display = 'block';
+  const el = document.getElementById('errorModal');
+  document.getElementById('errorModalBody').textContent = msg;
+  const modal = new bootstrap.Modal(el);
+  el.addEventListener('hide.bs.modal', () => document.activeElement?.blur(), { once: true });
+  modal.show();
 }
 
 function row(dt, dd) {
@@ -18,24 +20,23 @@ function row(dt, dd) {
 document.addEventListener('DOMContentLoaded', async () => {
   const id = idFromQuery();
   if (!id) {
-    showError('Falta el parámetro id en la URL.');
+    showError('Falta el parametro id en la URL.');
     return;
   }
   document.getElementById('btn-editar').href = `cursos-editar.html?id=${id}`;
 
   try {
-    const data = await api.get(`/cursos/${id}`);
-    if (!data) return;
-    const c = data.curso;
-    const fi = c.fecha_inicio ? new Date(c.fecha_inicio).toLocaleDateString('es-AR') : '—';
+    const c = await api.get(`/api/v2/cursos/${id}`);
+    if (!c) return;
+    const fi = c.fechaInicio ? new Date(c.fechaInicio).toLocaleDateString('es-AR') : '\u2014';
     document.getElementById('detalle').innerHTML =
-      row('ID', c.id_curso) +
+      row('ID', c.idCurso) +
       row('Nombre', c.nombre) +
-      row('Descripción', c.descripcion || '—') +
+      row('Descripcion', c.descripcion || '\u2014') +
       row('Inicio', fi) +
-      row('Horas', c.cantidad_horas) +
-      row('Máx. inscriptos', c.inscriptos_max) +
-      row('Estado', c.estado || '—');
+      row('Horas', c.cantidadHoras) +
+      row('Max. inscriptos', c.inscriptosMax) +
+      row('Estado', c.estado || '\u2014');
   } catch (e) {
     showError(e.message || 'No se pudo cargar el curso.');
   }
