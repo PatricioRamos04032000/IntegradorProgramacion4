@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar curso - FCAD UNER</title>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/nav.js" type="module" defer></script>
+  <script src="js/cursos-editar.js" type="module" defer></script>
+</head>
+<body class="bg-light">
+  <header class="fcad-header py-3 px-4 d-flex justify-content-between align-items-center">
+    <h1 class="fcad-titulo h4 mb-0">Cursos FCAD - UNER</h1>
+    <a href="#" id="logout-link" class="text-white small">Salir</a>
+  </header>
+  <div class="fcad-contenedor-principal">
+    <nav class="fcad-nav">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="inscripciones.html">Inscripciones</a></li>
+        <li><a href="estudiantes.html">Estudiantes</a></li>
+        <li><a href="cursos.html">Cursos</a></li>
+      </ul>
+    </nav>
+    <main class="fcad-main p-4">
+      <h2 class="h4 mb-3">Editar curso</h2>
+      <form id="form" style="max-width: 640px;">
+        <div class="mb-3">
+          <label class="form-label" for="nombre">Nombre</label>
+          <input class="form-control" id="nombre" name="nombre" maxlength="45" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="descripcion">Descripcion</label>
+          <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="fechaInicio">Fecha de inicio</label>
+          <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="cantidadHoras">Cantidad de horas</label>
+          <input type="number" class="form-control" id="cantidadHoras" name="cantidadHoras" min="0" step="1" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="inscriptosMax">Max. inscriptos</label>
+          <input type="number" class="form-control" id="inscriptosMax" name="inscriptosMax" min="0" step="1" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="idCursoEstado">Estado</label>
+          <select class="form-select" id="idCursoEstado" name="idCursoEstado" required></select>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a class="btn btn-secondary" href="cursos.html">Volver</a>
+      </form>
+    </main>
+  </div>
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="errorModalLabel">Error</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" id="errorModalBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

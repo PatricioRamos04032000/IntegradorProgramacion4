@@ -1,0 +1,26 @@
+// Login y API (front en Proyecto/web, API en Proyecto/api)
+//
+// 1) Ajustá la URL de la API en Proyecto/web/js/config.js (por defecto http://localhost:3000).
+//
+// 2) En Proyecto/api/.env definí FRONT_ORIGIN con el origen exacto del front (ej. Live Server):
+//    FRONT_ORIGIN=http://127.0.0.1:5500
+//
+// 3) Login (desde login.html o consola del navegador):
+const API_BASE = 'http://localhost:3000';
+const { token, user } = await fetch(API_BASE + '/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ nombre_usuario, contrasenia }),
+}).then((r) => r.json());
+sessionStorage.setItem('token', token);
+//
+// 4) Requests con JWT:
+fetch(API_BASE + '/estudiantes', {
+  headers: { Authorization: 'Bearer ' + sessionStorage.getItem('token') },
+});
+//
+// Notas
+// - Abrí http://localhost:3000/ → redirige a login. El panel (JSON) es GET /dashboard con Bearer.
+// - Cursos, estudiantes e inscripciones requieren Bearer salvo POST /login.
+// - JWT_SECRET debe ser una cadena larga y aleatoria en producción.
+// - El front estático no tiene package.json: abrí Proyecto/web con Live Server o `npx serve Proyecto/web`.

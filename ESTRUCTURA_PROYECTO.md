@@ -17,54 +17,54 @@ Para instalación, variables de entorno y restauración de la base de datos, ver
 | `bread_cursos_primer_entregable_*.plan.md` | Planificación histórica del primer entregable (referencia). |
 | `.gitignore` | Excluye `node_modules/`, `.env`, artefactos de IDE, etc. |
 
-La aplicación ejecutable vive en la carpeta **`Proyecto/`** (no en la raíz del repo).
+La aplicación tiene **dos partes bajo `Proyecto/`**: el backend Node en **`Proyecto/api/`** y el front estático en **`Proyecto/web/`**.
 
 ---
 
-## 2. Carpeta `Proyecto/` — aplicación Express
+## 2. Carpetas `Proyecto/api/` y `Proyecto/web/`
 
-### 2.1 Árbol de directorios (código propio)
+### 2.1 Backend (`Proyecto/api/`) — árbol principal
 
 ```text
-Proyecto/
-├── app.js                    # Factory de Express: middlewares, rutas, manejo de errores
+Proyecto/api/
+├── app.js                    # Express: middlewares, CORS, rutas, manejo de errores JSON
 ├── bin/
-│   └── www                   # Punto de entrada del proceso Node (npm start)
+│   └── www                   # Punto de entrada (npm start)
 ├── package.json
 ├── package-lock.json
-├── .env                      # Configuración local (no versionado; ver .env.example)
-├── .env.example              # Plantilla de variables de entorno
-├── CHANGELOG.md              # Notas de cómo se generó el proyecto y primer entregable
-├── Proyecto.esproj           # Proyecto para Visual Studio
-├── .vscode/
-│   └── launch.json           # Depuración desde VS Code / Cursor
+├── .env                      # Configuración local (no versionado)
+├── .env.example
+├── CHANGELOG.md
+├── Proyecto.esproj
 ├── db/
-│   └── pool.js               # Pool de conexiones `pg` hacia PostgreSQL
+│   └── pool.js
 ├── middleware/
-│   ├── asyncHandler.js       # Envuelve handlers async y reenvía errores a `next`
-│   ├── errorHandlers.js      # 404 + render de `views/error.pug` para errores HTTP
-│   └── validateIdParam.js    # Valida que `:id` sea entero positivo (usado en cursos)
-├── routes/                   # Definición de URLs y verbos HTTP
-├── controllers/              # Orquestación HTTP: params, body, respuesta (render/redirect)
-├── services/                 # Reglas de negocio y orquestación sobre repositorios
-├── repositories/             # SQL parametrizado y acceso a filas (capa de datos)
-├── views/                    # Plantillas Pug (SSR)
-└── public/                   # Estáticos servidos por Express (CSS, imágenes, etc.)
+│   ├── asyncHandler.js
+│   ├── errorHandlers.js      # 404 y errores → JSON
+│   └── validateIdParam.js
+├── routes/
+├── controllers/
+├── services/
+└── repositories/
 ```
 
-> **Nota histórica:** el [CHANGELOG.md](./Proyecto/CHANGELOG.md) del primer entregable menciona `models/cursoModel.js`. El código actual centraliza el SQL en **`repositories/*Repository.js`** para cursos, estudiantes e inscripciones.
+### 2.2 Front (`Proyecto/web/`)
+
+Sitio estático: HTML por pantalla, `css/estilo.css`, módulos ES en `js/` (`config.js`, `api.js`, `auth.js`, `nav.js`, un script por página).
+
+> **Nota histórica:** el [CHANGELOG.md](./Proyecto/api/CHANGELOG.md) del primer entregable menciona `models/cursoModel.js`. El código actual centraliza el SQL en **`repositories/*Repository.js`** para cursos, estudiantes e inscripciones.
 
 ### 2.2 Punto de entrada y arranque
 
-1. **`npm start`** (definido en `package.json`) ejecuta **`node ./bin/www`**.
+1. **`npm start`** (en `Proyecto/api/`) ejecuta **`node ./bin/www`**.
 2. **`bin/www`** crea el servidor HTTP, lee el puerto (`process.env.PORT` o `3000`) y llama a `app.listen`.
 3. **`app.js`** exporta la instancia de Express ya configurada (sin escuchar por sí sola).
 
 ### 2.3 Stack (resumen)
 
-- **Express 4**, vistas **Pug**, **PostgreSQL** vía **`pg`** (pool en `db/pool.js`).
+- **Express 4**, API **JSON** (sin motor de vistas), **PostgreSQL** vía **`pg`** (pool en `db/pool.js`).
 - **`dotenv`** al inicio de `app.js` para cargar `.env`.
-- **`method-override`** con query/body `_method` para simular **PUT** y **DELETE** desde formularios HTML.
+- **CORS** configurable con `FRONT_ORIGIN` hacia el sitio en `Proyecto/web/`.
 - **`morgan`** para log de peticiones en desarrollo, **`cookie-parser`** heredado del generador.
 
 ---
@@ -74,7 +74,7 @@ Proyecto/
 ```text
 Cliente (navegador)
     → routes/*.js          (URL + método HTTP)
-    → controllers/*.js     (req/res, status, redirect, render)
+    → controllers/*.js     (req/res, status, JSON)
     → services/*.js        (lógica de negocio, validaciones de dominio)
     → repositories/*.js    (consultas SQL, uso de pool)
     → db/pool.js           (Pool de PostgreSQL)
@@ -92,19 +92,20 @@ Cliente (navegador)
 
 | Archivo | Montaje en `app.js` | Responsabilidad |
 |---------|---------------------|-----------------|
-| `index.js` | `/` | Redirección a `/cursos`. |
+| *(ver `app.js`)* | `/` | `GET /` redirige a `/login.html`. `GET /dashboard` + JWT devuelve JSON del panel. `express.static` sirve `Proyecto/web/`. |
 | `users.js` | `/users` | Placeholder del generador Express (`respond with a resource`). |
 | `cursos.js` | `/cursos` | BREAD de cursos con `asyncHandler` y `validateIdParam('id')` en rutas con `:id`. |
-| `estudiantes.js` | `/estudiantes` | BREAD de estudiantes (orden de rutas: `/` y `/nuevo` antes de `/:id`). |
-| `inscripciones.js` | `/inscripciones` | Browse, alta, lectura y borrado lógico de inscripciones. |
+| `estudiantes.js` | `/estudiantes` | CRUD JSON; rutas con `/:id(\\d+)` y `validateIdParam`. |
+| `inscripciones.js` | `/inscripciones` | Lista, alta, detalle, certificado PDF, borrado lógico. |
 
 ### 4.2 `controllers/`
 
 | Archivo | Dominio | Comentario |
 |---------|---------|------------|
-| `cursosController.js` | Cursos | Listado con búsqueda, filtro, paginación; alta/edición/baja lógica. |
-| `estudiantesController.js` | Estudiantes | Browse, CRUD UI, detalle. |
-| `inscripcionesController.js` | Inscripciones | Lista, alta, detalle, delete lógico. |
+| `cursosController.js` | Cursos | Listado JSON con `estados`, alta/edición/baja; respuestas `201`/`204` según corresponda. |
+| `estudiantesController.js` | Estudiantes | Browse y CRUD JSON. |
+| `inscripcionesController.js` | Inscripciones | Lista, alta, detalle JSON, PDF, delete. |
+| `dashboardController.js` | Panel | Totales y últimos cursos en JSON. |
 
 ### 4.3 `services/`
 
@@ -130,22 +131,13 @@ Cliente (navegador)
 | `validateIdParam.js` | Middleware de factoría: `validateIdParam('id')` para IDs numéricos positivos. |
 | `errorHandlers.js` | `notFoundHandler` y `errorHandler` registrados al final de `app.js`. |
 
-### 4.6 `views/` (Pug)
+### 4.6 Front estático (`Proyecto/web/`)
 
-| Ruta | Contenido |
-|------|-----------|
-| `layout.pug` | Layout común (navbar Bootstrap 5 por CDN, bloques `content`). |
-| `error.pug` | Página de error HTTP. |
-| `index.pug` | Vista raíz del generador (la app redirige a cursos; puede quedar poco usada). |
-| `cursos/index.pug`, `show.pug`, `form.pug` | Browse, detalle y formulario de cursos. |
-| `estudiantes/*.pug` | `browse`, `add`, `edit`, `read`. |
-| `inscripciones/*.pug` | `browse`, `add`, `read`. |
+- Páginas HTML por recurso (listados, formularios, detalle).
+- `js/config.js`: URL base de la API.
+- `js/api.js`: `fetch` con JWT y manejo de `401`.
 
-### 4.7 `public/`
-
-- `public/stylesheets/style.css` — estilos globales o ajustes sobre Bootstrap.
-
-### 4.8 `db/pool.js`
+### 4.7 `db/pool.js`
 
 - Instancia única de `Pool` de `pg` leyendo `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.
 - Listener `pool.on('error', ...)` para errores en clientes inactivos.
@@ -154,25 +146,32 @@ Cliente (navegador)
 
 ## 5. Rutas HTTP resumidas (referencia rápida)
 
+Todas las rutas de negocio (salvo `POST /login`, `GET /` y archivos estáticos) esperan cabecera `Authorization: Bearer <JWT>`. El panel en JSON es **`GET /dashboard`**.
+
+### Raíz y panel
+
+- `GET /` — redirección a `/login.html`.
+- `GET /dashboard` — totales y últimos cursos (JSON, con JWT).
+
 ### Cursos (`/cursos`)
 
-Patrón BREAD alineado con el README: listado con querystring (`q`, `estado`, `page`, `pageSize`), formularios, `PUT`/`DELETE` vía `_method`.
+`GET /cursos` (listado + `estados` en el JSON), `POST /cursos`, `GET /cursos/:id`, `PUT /cursos/:id`, `DELETE /cursos/:id` (soft delete). Querystring en listado: `q`, `estado`, `page`, `pageSize`.
 
 ### Estudiantes (`/estudiantes`)
 
-`GET /`, `GET /nuevo`, `POST /`, `GET /:id`, `GET /:id/editar`, `PUT /:id`, `DELETE /:id` (confirmar en formularios el uso de `method-override` si aplica).
+`GET /`, `POST /`, `GET /:id`, `PUT /:id`, `DELETE /:id`.
 
 ### Inscripciones (`/inscripciones`)
 
-`GET /`, `GET /nuevo`, `POST /`, `GET /:id`, `DELETE /:id`.
+`GET /`, `POST /`, `GET /:id`, `GET /:id/certificado` (PDF), `DELETE /:id`.
 
 ---
 
 ## 6. Variables de entorno relevantes
 
-Definidas en **`Proyecto/.env.example`** (y documentadas en el README):
+Definidas en **`Proyecto/api/.env.example`** (y documentadas en el README):
 
-- `PORT`, `DB_*`, `DEFAULT_USER_ID` (usuario de auditoría mientras no exista login JWT).
+- `PORT`, `DB_*`, `JWT_*`, `FRONT_ORIGIN`, `DEFAULT_USER_ID` (si aplica en scripts o rutas legacy).
 
 No commitear `.env`; copiar desde `.env.example` y ajustar.
 
@@ -183,8 +182,8 @@ No commitear `.env`; copiar desde `.env.example` y ajustar.
 | Archivo | Propósito |
 |---------|-----------|
 | `IntegradorProgramacion4.slnx` | Abrir la solución en Visual Studio. |
-| `Proyecto/Proyecto.esproj` | Nodo del proyecto Express dentro de la solución. |
-| `Proyecto/.vscode/launch.json` | Perfiles de depuración (p. ej. lanzar `npm start` con debugger). |
+| `Proyecto/api/Proyecto.esproj` | Nodo del proyecto Express dentro de la solución. |
+| `Proyecto/api/.vscode/launch.json` | (Opcional) Depuración: `npm start` desde `Proyecto/api`. |
 
 La carpeta **`.vs/`** en la raíz suele ser local del IDE; está pensada para no versionarse salvo que el equipo decida lo contrario.
 
@@ -192,11 +191,11 @@ La carpeta **`.vs/`** en la raíz suele ser local del IDE; está pensada para no
 
 ## 8. Convenciones recomendadas al sumar código
 
-1. **Nuevas entidades:** añadir `*Repository.js` → `*Service.js` → `*Controller.js` → `routes/*.js` → vistas en `views/<entidad>/`.
-2. **IDs en URL:** preferir el mismo criterio que en `cursos` (`validateIdParam` + regex en rutas) para evitar colisiones con segmentos como `nuevo`.
-3. **Formularios que modifican:** usar `_method=PUT` / `_method=DELETE` donde corresponda, coherente con `method-override` en `app.js`.
+1. **Nuevas entidades:** añadir `*Repository.js` → `*Service.js` → `*Controller.js` → `routes/*.js` → pantallas HTML/JS en `Proyecto/web/`.
+2. **IDs en URL:** preferir el mismo criterio que en `cursos` (`validateIdParam` + regex en rutas) para evitar colisiones con segmentos literales.
+3. **Mutaciones:** el front usa `fetch` con métodos `POST`/`PUT`/`DELETE` y cuerpo JSON.
 4. **SQL:** siempre parametrizado (`$1`, `$2`, …); no concatenar input del usuario en strings SQL.
-5. **Auditoría:** respetar `DEFAULT_USER_ID` y campos de modificación según el esquema del dump hasta que exista autenticación real.
+5. **Auditoría:** con JWT, `req.user.id_usuario` alimenta `id_usuario_modificacion` en los servicios/repositorios.
 
 ---
 
@@ -206,4 +205,4 @@ Según el README, iteraciones futuras incluyen login JWT, dashboard, refinamient
 
 ---
 
-*Última revisión alineada con el árbol de código en el repositorio (Express + capas routes/controllers/services/repositories + Pug).*
+*Última revisión: API JSON en `Proyecto/api/` y front estático en `Proyecto/web/`.*
