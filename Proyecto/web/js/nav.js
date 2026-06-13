@@ -38,8 +38,14 @@ function initNav() {
     toggler.setAttribute('aria-label', 'Abrir menú');
     toggler.innerHTML = '<span class="navbar-toggler-icon"></span>';
 
+    const logoLink = document.createElement('a');
+    logoLink.href = 'index.html';
+    logoLink.className = 'd-flex align-items-center ms-1 me-1';
+    logoLink.innerHTML = '<img src="fcad-logo.png" alt="FCAD Logo" style="height: 48px; width: auto; object-fit: contain;">';
+
     titulo.parentNode.insertBefore(grupo, titulo);
     grupo.appendChild(toggler);
+    grupo.appendChild(logoLink);
     grupo.appendChild(titulo);
   }
 
