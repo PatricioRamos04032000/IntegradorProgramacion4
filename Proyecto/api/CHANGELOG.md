@@ -23,3 +23,10 @@ Los pasos siguientes se usaron para generar este proyecto:
 - Se creó `routes/cursos.js` y se montó en `app.js` bajo `/cursos`. `routes/index.js` redirige a `/cursos`.
 - Se modernizó `views/layout.pug` con Bootstrap 5 (vía CDN) y navbar superior, y se agregaron las vistas `views/cursos/index.pug`, `show.pug` y `form.pug` con UI responsiva, buscador, filtro por estado, paginación y confirmación al eliminar.
 - Se agregó un `README.md` en la raíz del repositorio con instrucciones para restaurar el dump SQL, configurar el entorno y correr la aplicación.
+
+## Entrega final — gaps API v2
+
+- **`GET /api/v2/cursos/:id/inscriptos`**: listado de inscriptos activos de un curso (JOIN inscripciones + estudiantes). DTO `inscripcionCurso.response.dto.js`. Reutiliza el certificado PDF existente por inscripción.
+- **Búsqueda múltiple de estudiantes**: query params opcionales `documento`, `apellido`, `nombres`, `email` (además del atajo `q`) en validator, transform y repository.
+- **Swagger OpenAPI**: bloques `@openapi` en todas las rutas v2 (`auth`, `cursos`, `estudiantes`, `inscripciones`, `dashboard`) y esquema `bearerAuth` en `app.js`.
+- Documentación actualizada en `README.md` y `ESTRUCTURA_PROYECTO.md`.

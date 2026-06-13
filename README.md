@@ -2,17 +2,18 @@
 
 Trabajo Final Integrador de **Programacion IV (FCAD -- UNER)**, 1er cuatrimestre 2026.
 
-> **Segunda entrega (18/05/2026):** se migra el BREAD de **Cursos** a una arquitectura en capas con buenas practicas (ESM + clases, DTOs camelCase, validators con express-validator, transforms, Swagger, helmet). El resto del proyecto (estudiantes, inscripciones, auth, dashboard) mantiene la estructura original en CommonJS.
+> **API v2 unificada:** todo el backend en `Proyecto/api/` usa **ESM**, capas por responsabilidad (routes, controllers, services, repositories, dtos, validators, transforms, middleware) y rutas bajo **`/api/v2/*`**. Respuestas JSON en **camelCase** vía DTOs.
 
 ## Stack
 
 - **Runtime:** Node.js (>= 18 recomendado)
 - **API:** Express 4 (JSON REST; sin vistas en servidor)
+- **Modulos:** ESM (`"type": "module"` en `Proyecto/api/package.json`)
 - **Front:** HTML + CSS + JavaScript estatico en `Proyecto/web/` (consumo de la API con `fetch`)
 - **UI:** Bootstrap 5 (archivos locales en `web/css/` y `web/js/`)
 - **Base de datos:** PostgreSQL (driver oficial `pg`)
 - **Autenticacion:** JWT (`Authorization: Bearer ...`)
-- **Validacion:** `express-validator` (en el modulo de cursos)
+- **Validacion:** `express-validator` en todos los recursos v2
 - **Seguridad:** `helmet` (headers HTTP de seguridad)
 - **Documentacion API:** Swagger UI (`swagger-jsdoc` + `swagger-ui-express`) en `/docs`
 - **Configuracion:** `dotenv`
@@ -27,42 +28,19 @@ Trabajo Final Integrador de **Programacion IV (FCAD -- UNER)**, 1er cuatrimestre
 ├── comousarellogin.txt              Ejemplos de login y fetch con JWT
 ├── IntegradorProgramacion4.slnx     Solucion de Visual Studio
 └── Proyecto/
-    ├── api/                         Backend Node (Express + capas)
-    │   ├── app.js                   Factory async createApp() -- monta todo
-    │   ├── bin/www                  Entry point (invoca createApp)
-    │   ├── package.json             CommonJS + dependencias
-    │   │
-    │   ├── cursos/                  *** Modulo ESM con buenas practicas ***
-    │   │   ├── package.json         { "type": "module" }
-    │   │   ├── index.js             Export del router
-    │   │   ├── controllers/
-    │   │   │   └── cursos.controller.js    Clase CursosController
-    │   │   ├── services/
-    │   │   │   ├── base.service.js         BaseService (mapKeysToColumns)
-    │   │   │   └── cursos.service.js       CursosService (KEYS_MAP + logica)
-    │   │   ├── repositories/
-    │   │   │   ├── database.js             Pool pg (BdUtils)
-    │   │   │   └── cursos.repository.js    SQL parametrizado
-    │   │   ├── dtos/
-    │   │   │   ├── curso.response.dto.js           snake_case -> camelCase
-    │   │   │   └── cursoEstado.response.dto.js
-    │   │   ├── validators/
-    │   │   │   ├── cursosFindAll.validation.js     Query params (GET)
-    │   │   │   ├── cursosBody.validation.js        Body (POST/PUT)
-    │   │   │   └── cursosIdParam.validation.js     Param :id
-    │   │   ├── transforms/
-    │   │   │   └── cursosFindAll.transform.js      req.filter/order/limit/offset
-    │   │   ├── middleware/
-    │   │   │   └── asyncHandler.js                 Version ESM
-    │   │   └── routes/v2/
-    │   │       └── cursos.routes.js                Router + JSDoc Swagger
-    │   │
-    │   ├── controllers/             Controladores CJS (auth, dashboard, estudiantes, inscripciones)
-    │   ├── services/                Servicios CJS
-    │   ├── repositories/            Repositorios CJS (+ cursoRepository.js legacy)
-    │   ├── routes/                  Rutas CJS (auth, estudiantes, inscripciones, users)
-    │   ├── middleware/              Middlewares CJS (jwtAuth, errorHandlers, etc.)
-    │   ├── db/                      pool.js (conexion PostgreSQL)
+    ├── api/                         Backend Node (Express + capas ESM)
+    │   ├── app.js                   Configuracion Express + montaje /api/v2/*
+    │   ├── bin/www                  Entry point
+    │   ├── package.json             ESM + dependencias
+    │   ├── routes/                  *.routes.js (auth, cursos, estudiantes, inscripciones, dashboard)
+    │   ├── controllers/             Controllers finos (solo HTTP)
+    │   ├── services/                Logica de negocio + BaseService
+    │   ├── repositories/            SQL parametrizado (pool unico)
+    │   ├── dtos/                    snake_case (BD) -> camelCase (API)
+    │   ├── validators/              express-validator por recurso
+    │   ├── transforms/              req.filter / order / limit / offset
+    │   ├── middleware/              jwtAuth, asyncHandler, errorHandlers, handleValidationErrors
+    │   ├── db/pool.js               Conexion PostgreSQL
     │   ├── .env                     (no se commitea)
     │   └── .env.example
     │
@@ -87,30 +65,22 @@ Trabajo Final Integrador de **Programacion IV (FCAD -- UNER)**, 1er cuatrimestre
         └── ...                      (index, login, estudiantes, inscripciones)
 ```
 
-## Arquitectura de cursos (buenas practicas)
+## Arquitectura API v2
 
-El modulo de cursos sigue una arquitectura en capas inspirada en las mejores practicas de la materia:
+Todos los recursos siguen el mismo flujo en capas:
 
 ```
-Request → Validator (express-validator) → Transform → Controller → Service → Repository → PostgreSQL
-                                                         ↓
-                                                   DTO (camelCase) → Response
+Request → Validator → Transform → Controller → Service → Repository → PostgreSQL
+                                         ↓
+                                   DTO (camelCase) → Response
 ```
 
-### Capas
+### Convenciones
 
-| Capa | Responsabilidad |
-|------|----------------|
-| **Validators** | Validan query params (GET), body (POST/PUT) y params (:id) con `express-validator`. Responden 400 con `{ errors: [...] }` si hay errores. |
-| **Transforms** | Transforman los query params validados en `req.filter`, `req.order`, `req.limit`, `req.offset` para que el controller los consuma de forma uniforme. |
-| **Controller** | Recibe la request, delega al service y devuelve la response. Maneja errores 404/500. |
-| **Service** | Logica de negocio. Usa `BaseService.mapKeysToColumns` para traducir claves camelCase a snake_case de la BD. Convierte resultados a DTOs. |
-| **Repository** | Acceso a datos con SQL parametrizado. Usa `BdUtils.createConnection()` para obtener un client del pool. |
-| **DTOs** | `CursoResponseDTO` y `CursoEstadoResponseDTO` mapean campos de snake_case (BD) a camelCase (API). |
-
-### Convivencia ESM / CJS
-
-La subcarpeta `api/cursos/` tiene su propio `package.json` con `"type": "module"`, lo que permite usar `import/export` y clases ES6. El resto del backend sigue en CommonJS. El puente es `await import('./cursos/index.js')` en `app.js`.
+- **Imports:** ESM (`import`/`export`) en todo `Proyecto/api/`.
+- **Pool:** unico en `db/pool.js` (sin sub-modulos por recurso).
+- **Errores:** validacion `{ errors: [...] }` (400); negocio/not found `{ error: "..." }` (4xx/5xx).
+- **Auditoria:** `req.user.id_usuario` del JWT en operaciones de escritura.
 
 ## Puesta en marcha
 
@@ -166,30 +136,38 @@ Tambien podes abrir `Proyecto/web/` con Live Server, ajustando `FRONT_ORIGIN` en
 
 ### Autenticacion
 
-`POST /login` con JSON `{ nombre_usuario, contrasenia }` -- devuelve `{ token, user }`.
+`POST /api/v2/auth/login` con JSON `{ nombreUsuario, contrasenia }` — devuelve `{ token, user }`.
 
-El resto de rutas requieren `Authorization: Bearer <token>`.
+El resto de rutas v2 requieren `Authorization: Bearer <token>`.
 
-### Cursos (v2 -- buenas practicas)
+### Recursos v2 (camelCase)
 
-Todos los campos en **camelCase** via DTOs. Documentacion Swagger disponible en **[/docs](http://localhost:3000/docs)**.
+Documentacion Swagger en **[/docs](http://localhost:3000/docs)**.
+
+| Recurso | Rutas base |
+|---------|------------|
+| Cursos | `/api/v2/cursos` (+ `/estados`) |
+| Estudiantes | `/api/v2/estudiantes` |
+| Inscripciones | `/api/v2/inscripciones` (+ `/:id/certificado` PDF) |
+| Dashboard | `/api/v2/dashboard` |
+
+#### Cursos
 
 | Metodo | Ruta | Descripcion |
 |--------|------|-------------|
-| `GET` | `/api/v2/cursos` | Listado con paginacion (`limit`, `offset`), filtrado (`nombre`, `idCursoEstado`) y ordenacion (`order`, `asc`) |
-| `GET` | `/api/v2/cursos/estados` | Estados activos para combos |
-| `GET` | `/api/v2/cursos/:id` | Detalle de un curso |
-| `POST` | `/api/v2/cursos` | Crear curso (body: `{ nombre, descripcion, fechaInicio, cantidadHoras, inscriptosMax, idCursoEstado }`) |
-| `PUT` | `/api/v2/cursos/:id` | Actualizar curso (mismo body) |
-| `DELETE` | `/api/v2/cursos/:id` | Soft delete (cambia estado a eliminado) |
+| `GET` | `/api/v2/cursos` | Listado (`limit`, `offset`, `nombre`, `idCursoEstado`, `order`, `asc`) |
+| `GET` | `/api/v2/cursos/estados` | Estados activos |
+| `GET` | `/api/v2/cursos/:id` | Detalle |
+| `GET` | `/api/v2/cursos/:id/inscriptos` | Inscriptos activos del curso (para diplomas) |
+| `POST` | `/api/v2/cursos` | Alta |
+| `PUT` | `/api/v2/cursos/:id` | Edicion |
+| `DELETE` | `/api/v2/cursos/:id` | Soft delete |
 
-### Estudiantes, Inscripciones y Dashboard (v1 -- estructura original)
+#### Estudiantes / Inscripciones
 
-| Recurso | Metodos |
-|---------|---------|
-| `/dashboard` | `GET` -- JSON del panel |
-| `/estudiantes` | `GET`, `POST`, `GET /:id`, `PUT /:id`, `DELETE /:id` |
-| `/inscripciones` | `GET`, `POST`, `GET /:id`, `GET /:id/certificado` (PDF), `DELETE /:id` |
+Mismos verbos CRUD bajo `/api/v2/estudiantes` e `/api/v2/inscripciones`. Body de inscripcion: `{ idCurso, idEstudiante }`.
+
+**Estudiantes — filtros de listado:** además del atajo `q` (apellido o documento), se pueden combinar `documento`, `apellido`, `nombres` y `email` como query params opcionales (búsqueda parcial con `ILIKE`).
 
 ### Soft delete (cursos)
 

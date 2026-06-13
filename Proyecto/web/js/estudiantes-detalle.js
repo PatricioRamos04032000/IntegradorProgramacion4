@@ -1,4 +1,7 @@
+import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+
+requireAuth();
 
 function idFromQuery() {
   const id = new URLSearchParams(window.location.search).get('id');
@@ -23,16 +26,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   document.getElementById('btn-editar').href = `estudiantes-editar.html?id=${id}`;
   try {
-    const s = await api.get(`/estudiantes/${id}`);
+    const s = await api.get(`/api/v2/estudiantes/${id}`);
     if (!s) return;
     const fn =
-      typeof s.fecha_nacimiento === 'string'
-        ? s.fecha_nacimiento.slice(0, 10)
-        : s.fecha_nacimiento
-          ? new Date(s.fecha_nacimiento).toLocaleDateString('es-AR')
+      typeof s.fechaNacimiento === 'string'
+        ? s.fechaNacimiento.slice(0, 10)
+        : s.fechaNacimiento
+          ? new Date(s.fechaNacimiento).toLocaleDateString('es-AR')
           : '—';
     document.getElementById('detalle').innerHTML =
-      row('ID', s.id_estudiante) +
+      row('ID', s.idEstudiante) +
       row('Documento', s.documento) +
       row('Apellido', s.apellido) +
       row('Nombres', s.nombres) +

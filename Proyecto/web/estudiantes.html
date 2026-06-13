@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Estudiantes - FCAD UNER</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/estilo.css">
+  <script src="js/bootstrap.bundle.min.js"></script>
   <script src="js/nav.js" type="module" defer></script>
   <script src="js/estudiantes.js" type="module" defer></script>
 </head>
@@ -26,9 +27,27 @@
     <main class="fcad-main p-4">
       <h2 class="h4 mb-3">Estudiantes</h2>
       <div id="error" class="alert alert-danger" style="display: none" role="alert"></div>
-      <form class="input-group mb-3" id="buscar" style="max-width: 480px;">
-        <input type="text" class="form-control" id="q" name="q" placeholder="Apellido o documento">
-        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+      <form class="row g-2 mb-3" id="buscar">
+        <div class="col-12 col-md-6 col-lg-3">
+          <label class="form-label" for="documento">Documento</label>
+          <input type="text" class="form-control" id="documento" name="documento" placeholder="Documento">
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+          <label class="form-label" for="apellido">Apellido</label>
+          <input type="text" class="form-control" id="apellido" name="apellido" placeholder="Apellido">
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+          <label class="form-label" for="nombres">Nombres</label>
+          <input type="text" class="form-control" id="nombres" name="nombres" placeholder="Nombres">
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+          <label class="form-label" for="email">Email</label>
+          <input type="text" class="form-control" id="email" name="email" placeholder="Email">
+        </div>
+        <div class="col-12 d-flex flex-wrap gap-2">
+          <button class="btn btn-outline-primary" type="submit">Buscar</button>
+          <button class="btn btn-outline-secondary" type="button" id="btn-limpiar">Limpiar</button>
+        </div>
       </form>
       <div class="table-responsive">
         <table class="table table-striped">
@@ -36,9 +55,9 @@
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex justify-content-between align-items-center fcad-paginacion">
         <small class="text-muted">Página <span id="pag"></span></small>
-        <div>
+        <div class="fcad-paginacion-btns">
           <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-prev">Anterior</button>
           <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-next">Siguiente</button>
         </div>

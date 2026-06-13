@@ -1,4 +1,7 @@
+import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+
+requireAuth();
 
 function showError(msg) {
   const el = document.getElementById('errorModal');

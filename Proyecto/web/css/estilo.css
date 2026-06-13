@@ -12,6 +12,14 @@ body {
   font-size: clamp(1.25rem, 2.5vw, 1.75rem);
 }
 
+.fcad-nav-toggler {
+  padding: 0.25rem 0.5rem;
+}
+
+.fcad-nav-toggler .navbar-toggler-icon {
+  filter: invert(1);
+}
+
 .fcad-contenedor-principal {
   display: flex;
   min-height: calc(100vh - 72px);
@@ -35,7 +43,8 @@ body {
   text-decoration: none;
 }
 
-.fcad-nav ul li a:hover {
+.fcad-nav ul li a:hover,
+.fcad-nav ul li a.active {
   background-color: rgb(95, 7, 95);
 }
 
@@ -44,12 +53,59 @@ body {
   background-color: #fff;
 }
 
-@media (max-width: 992px) {
+.fcad-paginacion {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (min-width: 992px) {
+  .fcad-nav-toggler {
+    display: none !important;
+  }
+
+  .fcad-nav.collapse {
+    display: block !important;
+    visibility: visible;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 991.98px) {
   .fcad-contenedor-principal {
     flex-direction: column;
   }
 
   .fcad-nav {
+    width: 100%;
+  }
+
+  .fcad-main {
+    padding: 1rem !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .fcad-paginacion {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .fcad-paginacion-btns {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .fcad-paginacion-btns .btn {
+    flex: 1;
+  }
+
+  .fcad-tabla-acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .fcad-tabla-acciones .btn {
     width: 100%;
   }
 }

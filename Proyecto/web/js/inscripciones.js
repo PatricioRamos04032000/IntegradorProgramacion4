@@ -1,4 +1,7 @@
+import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+
+requireAuth();
 
 let page = 1;
 const pageSize = 10;
@@ -7,8 +10,8 @@ function qs() {
   const q = document.getElementById('q').value.trim();
   const p = new URLSearchParams();
   if (q) p.set('q', q);
-  p.set('page', String(page));
-  p.set('pageSize', String(pageSize));
+  p.set('limit', String(pageSize));
+  p.set('offset', String((page - 1) * pageSize));
   return p.toString();
 }
 
@@ -21,24 +24,24 @@ function showError(msg) {
 async function cargar() {
   document.getElementById('error').style.display = 'none';
   try {
-    const data = await api.get(`/inscripciones?${qs()}`);
+    const data = await api.get(`/api/v2/inscripciones?${qs()}`);
     if (!data) return;
-    document.getElementById('pag').textContent = String(data.page);
+    document.getElementById('pag').textContent = String(page);
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
     (data.items || []).forEach((ins) => {
       const tr = document.createElement('tr');
-      const fecha = ins.fecha_hora_inscripcion
-        ? new Date(ins.fecha_hora_inscripcion).toLocaleDateString('es-AR')
+      const fecha = ins.fechaHoraInscripcion
+        ? new Date(ins.fechaHoraInscripcion).toLocaleDateString('es-AR')
         : '—';
       tr.innerHTML = `
         <td>${fecha}</td>
-        <td>${ins.curso_nombre}</td>
+        <td>${ins.cursoNombre}</td>
         <td>${ins.apellido}, ${ins.nombres}</td>
         <td>${ins.documento}</td>
-        <td>
-          <a class="btn btn-sm btn-outline-primary" href="inscripciones-detalle.html?id=${ins.id_inscripcion}">Ver</a>
-          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${ins.id_inscripcion}">Dar de baja</button>
+        <td class="fcad-tabla-acciones">
+          <a class="btn btn-sm btn-outline-primary" href="inscripciones-detalle.html?id=${ins.idInscripcion}">Ver</a>
+          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${ins.idInscripcion}">Dar de baja</button>
         </td>`;
       tbody.appendChild(tr);
     });
@@ -47,15 +50,16 @@ async function cargar() {
         if (!window.confirm('¿Dar de baja esta inscripción?')) return;
         const id = btn.getAttribute('data-id');
         try {
-          await api.del(`/inscripciones/${id}`);
+          await api.del(`/api/v2/inscripciones/${id}`);
           await cargar();
         } catch (e) {
           showError(e.message || 'No se pudo dar de baja.');
         }
       });
     });
-    document.getElementById('btn-prev').disabled = data.page <= 1;
-    document.getElementById('btn-next').disabled = !data.hasNext;
+    const hasNext = (page - 1) * pageSize + (data.items || []).length < (data.total || 0);
+    document.getElementById('btn-prev').disabled = page <= 1;
+    document.getElementById('btn-next').disabled = !hasNext;
   } catch (e) {
     showError(e.message || 'Error al cargar inscripciones.');
   }

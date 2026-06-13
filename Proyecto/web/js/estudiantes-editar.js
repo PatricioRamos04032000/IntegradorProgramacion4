@@ -1,4 +1,7 @@
+import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+
+requireAuth();
 
 function idFromQuery() {
   const id = new URLSearchParams(window.location.search).get('id');
@@ -18,17 +21,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   try {
-    const s = await api.get(`/estudiantes/${id}`);
+    const s = await api.get(`/api/v2/estudiantes/${id}`);
     if (!s) return;
     document.getElementById('documento').value = s.documento || '';
     document.getElementById('apellido').value = s.apellido || '';
     document.getElementById('nombres').value = s.nombres || '';
     document.getElementById('email').value = s.email || '';
     document.getElementById('fecha_nacimiento').value =
-      typeof s.fecha_nacimiento === 'string'
-        ? s.fecha_nacimiento.slice(0, 10)
-        : s.fecha_nacimiento
-          ? new Date(s.fecha_nacimiento).toISOString().slice(0, 10)
+      typeof s.fechaNacimiento === 'string'
+        ? s.fechaNacimiento.slice(0, 10)
+        : s.fechaNacimiento
+          ? new Date(s.fechaNacimiento).toISOString().slice(0, 10)
           : '';
   } catch (e) {
     showError(e.message || 'No se pudo cargar.');
@@ -43,10 +46,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       apellido: document.getElementById('apellido').value.trim(),
       nombres: document.getElementById('nombres').value.trim(),
       email: document.getElementById('email').value.trim(),
-      fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+      fechaNacimiento: document.getElementById('fecha_nacimiento').value,
     };
     try {
-      await api.put(`/estudiantes/${id}`, body);
+      await api.put(`/api/v2/estudiantes/${id}`, body);
       window.location.href = `estudiantes-detalle.html?id=${id}`;
     } catch (err) {
       showError(err.message || 'Error al guardar.');

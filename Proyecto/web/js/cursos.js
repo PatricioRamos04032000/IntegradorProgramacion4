@@ -1,4 +1,7 @@
+import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+
+requireAuth();
 
 const pageSize = 10;
 let offset = 0;
@@ -58,7 +61,7 @@ async function cargar() {
         <td>${c.cantidadHoras}</td>
         <td>${c.inscriptosMax}</td>
         <td>${c.estado || ''}</td>
-        <td>
+        <td class="fcad-tabla-acciones">
           <a class="btn btn-sm btn-outline-primary" href="cursos-detalle.html?id=${c.idCurso}">Ver</a>
           <a class="btn btn-sm btn-outline-secondary" href="cursos-editar.html?id=${c.idCurso}">Editar</a>
           <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${c.idCurso}">Eliminar</button>

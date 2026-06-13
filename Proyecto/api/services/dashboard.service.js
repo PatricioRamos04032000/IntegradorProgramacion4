@@ -1,0 +1,27 @@
+import pool from '../db/pool.js';
+
+export default class DashboardService {
+  async getDashboard() {
+    const [cursosResult, estudiantesResult, linksRapidosResult] = await Promise.all([
+      pool.query('SELECT COUNT(*)::int AS total FROM cursos WHERE id_curso_estado = 1'),
+      pool.query('SELECT COUNT(*)::int AS total FROM estudiantes WHERE activo = 1'),
+      pool.query(`
+        SELECT id_curso, nombre, inscriptos_max
+          FROM cursos
+         WHERE id_curso_estado = 1
+         ORDER BY fecha_inicio DESC
+         LIMIT 5
+      `),
+    ]);
+
+    return {
+      totalCursos: cursosResult.rows[0].total,
+      totalEstudiantes: estudiantesResult.rows[0].total,
+      cursosRapidos: linksRapidosResult.rows.map((c) => ({
+        idCurso: c.id_curso,
+        nombre: c.nombre,
+        inscriptosMax: c.inscriptos_max,
+      })),
+    };
+  }
+}

@@ -20,15 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const nombre_usuario = document.getElementById('nombre_usuario').value.trim();
+    const nombreUsuario = document.getElementById('nombre_usuario').value.trim();
     const contrasenia = document.getElementById('contrasenia').value;
     document.getElementById('error').style.display = 'none';
 
     try {
-      const res = await fetch(`${API_BASE}/login`, {
+      const res = await fetch(`${API_BASE}/api/v2/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre_usuario, contrasenia }),
+        body: JSON.stringify({ nombreUsuario, contrasenia }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {

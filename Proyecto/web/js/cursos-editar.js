@@ -1,4 +1,7 @@
+import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+
+requireAuth();
 
 function idFromQuery() {
   const id = new URLSearchParams(window.location.search).get('id');

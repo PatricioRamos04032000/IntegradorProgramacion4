@@ -1,80 +1,83 @@
-require('dotenv').config();
+import 'dotenv/config';
 
-const path = require('path');
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
-const helmet = require('helmet');
+import path from 'path';
+import { fileURLToPath } from 'url';
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import helmet from 'helmet';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
-const usersRouter = require('./routes/users');
-const authRouter = require('./routes/auth');
-const errorHandlers = require('./middleware/errorHandlers');
-const jwtAuth = require('./middleware/jwtAuth');
-const asyncHandler = require('./middleware/asyncHandler');
-const dashboardController = require('./controllers/dashboardController');
+import authRouter from './routes/auth.routes.js';
+import cursosRouter from './routes/cursos.routes.js';
+import estudiantesRouter from './routes/estudiantes.routes.js';
+import inscripcionesRouter from './routes/inscripciones.routes.js';
+import dashboardRouter from './routes/dashboard.routes.js';
+import { notFoundHandler, errorHandler } from './middleware/errorHandlers.js';
+import jwtAuth from './middleware/jwtAuth.js';
 
-const estudiantesRouter = require('./routes/estudiantes');
-const inscripcionesRouter = require('./routes/inscripciones');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-module.exports = async function createApp() {
-  const app = express();
+const app = express();
 
-  const frontOrigin = process.env.FRONT_ORIGIN || 'http://127.0.0.1:5500';
-  app.use(
-    cors({
-      origin: frontOrigin,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-    }),
-  );
+const frontOrigin = process.env.FRONT_ORIGIN || 'http://127.0.0.1:5500';
+app.use(
+  cors({
+    origin: frontOrigin,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }),
+);
 
-  app.use(helmet());
-  app.use(logger('dev'));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
-  app.use(cookieParser());
+app.use(helmet());
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-  const webRoot = path.join(__dirname, '..', 'web');
+const webRoot = path.join(__dirname, '..', 'web');
 
-  app.use('/', authRouter);
+app.get('/', (req, res) => {
+  res.redirect(302, '/login.html');
+});
 
-  app.get('/', (req, res) => {
-    res.redirect(302, '/login.html');
-  });
+app.use('/api/v2/auth', authRouter);
+app.use('/api/v2/cursos', jwtAuth, cursosRouter);
+app.use('/api/v2/estudiantes', jwtAuth, estudiantesRouter);
+app.use('/api/v2/inscripciones', jwtAuth, inscripcionesRouter);
+app.use('/api/v2/dashboard', jwtAuth, dashboardRouter);
 
-  app.get('/dashboard', jwtAuth, asyncHandler(dashboardController.getDashboard));
+app.use(express.static(webRoot));
 
-  app.use(express.static(webRoot));
-
-  app.use('/users', usersRouter);
-  app.use('/estudiantes', jwtAuth, estudiantesRouter);
-  app.use('/inscripciones', jwtAuth, inscripcionesRouter);
-
-  const { default: cursosRouter } = await import('./cursos/index.js');
-  app.use('/api/v2/cursos', jwtAuth, cursosRouter);
-
-  const swaggerJsdoc = (await import('swagger-jsdoc')).default;
-  const swaggerUi = await import('swagger-ui-express');
-
-  const swaggerOptions = {
-    definition: {
-      openapi: '3.0.0',
-      info: {
-        title: 'Proyecto Integrador - API',
-        version: '2.0.0',
-        description: 'API REST con buenas prácticas: DTO, Paginación, Filtrado y Ordenación',
-      },
-      servers: [{ url: `http://localhost:${process.env.PORT || 3000}` }],
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Proyecto Integrador - API',
+      version: '2.0.0',
+      description: 'API REST v2 con capas: validators, DTOs, services, repositories',
     },
-    apis: ['./cursos/routes/v2/*.js'],
-  };
-
-  const swaggerDocs = swaggerJsdoc(swaggerOptions);
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-  app.use(errorHandlers.notFoundHandler);
-  app.use(errorHandlers.errorHandler);
-
-  return app;
+    servers: [{ url: `http://localhost:${process.env.PORT || 3000}` }],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  apis: [path.join(__dirname, 'routes', '*.routes.js')],
 };
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+export default app;

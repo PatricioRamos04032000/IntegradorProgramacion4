@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-function jwtAuth(req, res, next) {
+export default function jwtAuth(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const [scheme, token] = authHeader.split(' ');
 
@@ -27,5 +27,3 @@ function jwtAuth(req, res, next) {
     return res.status(401).json({ error: `No autorizado: ${motivo}` });
   }
 }
-
-module.exports = jwtAuth;

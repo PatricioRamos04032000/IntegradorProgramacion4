@@ -27,15 +27,15 @@
     <main class="fcad-main p-4">
       <h2 class="h4 mb-3">Cursos</h2>
       <form class="row g-2 mb-3" id="filtros">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
           <label class="form-label" for="nombre">Buscar</label>
           <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre">
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
           <label class="form-label" for="idCursoEstado">Estado</label>
           <select class="form-select" id="idCursoEstado" name="idCursoEstado"></select>
         </div>
-        <div class="col-md-2 d-flex align-items-end">
+        <div class="col-12 col-md-2 d-flex align-items-end">
           <button type="submit" class="btn btn-outline-primary w-100">Filtrar</button>
         </div>
       </form>
@@ -55,9 +55,9 @@
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex justify-content-between align-items-center fcad-paginacion">
         <small class="text-muted" id="pag-info"></small>
-        <div>
+        <div class="fcad-paginacion-btns">
           <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-prev">Anterior</button>
           <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-next">Siguiente</button>
         </div>

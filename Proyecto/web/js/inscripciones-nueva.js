@@ -1,4 +1,7 @@
+import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+
+requireAuth();
 
 function showError(msg) {
   const el = document.getElementById('error');
@@ -9,20 +12,20 @@ function showError(msg) {
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const [cRes, eRes] = await Promise.all([
-      api.get('/cursos?page=1&pageSize=500'),
-      api.get('/estudiantes?page=1&pageSize=500'),
+      api.get('/api/v2/cursos?limit=500&offset=0'),
+      api.get('/api/v2/estudiantes?limit=500&offset=0'),
     ]);
     if (!cRes || !eRes) return;
     const selC = document.getElementById('id_curso');
     selC.innerHTML = '';
     (cRes.items || []).forEach((c) => {
-      selC.appendChild(new Option(`${c.nombre} (#${c.id_curso})`, String(c.id_curso)));
+      selC.appendChild(new Option(`${c.nombre} (#${c.idCurso})`, String(c.idCurso)));
     });
     const selE = document.getElementById('id_estudiante');
     selE.innerHTML = '';
     (eRes.items || []).forEach((s) => {
       selE.appendChild(
-        new Option(`${s.apellido}, ${s.nombres} — ${s.documento}`, String(s.id_estudiante)),
+        new Option(`${s.apellido}, ${s.nombres} — ${s.documento}`, String(s.idEstudiante)),
       );
     });
   } catch (e) {
@@ -33,12 +36,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.preventDefault();
     document.getElementById('error').style.display = 'none';
     const body = {
-      id_curso: Number(document.getElementById('id_curso').value),
-      id_estudiante: Number(document.getElementById('id_estudiante').value),
+      idCurso: Number(document.getElementById('id_curso').value),
+      idEstudiante: Number(document.getElementById('id_estudiante').value),
     };
     try {
-      const ins = await api.post('/inscripciones', body);
-      window.location.href = `inscripciones-detalle.html?id=${ins.id_inscripcion}`;
+      const ins = await api.post('/api/v2/inscripciones', body);
+      window.location.href = `inscripciones-detalle.html?id=${ins.idInscripcion}`;
     } catch (err) {
       const msg = (err.body && err.body.error) || err.message || 'Error al inscribir.';
       showError(msg);

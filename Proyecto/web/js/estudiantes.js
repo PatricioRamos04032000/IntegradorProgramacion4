@@ -1,14 +1,19 @@
+import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+
+requireAuth();
 
 let page = 1;
 const pageSize = 10;
 
 function qs() {
-  const q = document.getElementById('q').value.trim();
   const p = new URLSearchParams();
-  if (q) p.set('q', q);
-  p.set('page', String(page));
-  p.set('pageSize', String(pageSize));
+  ['documento', 'apellido', 'nombres', 'email'].forEach((field) => {
+    const val = document.getElementById(field)?.value.trim();
+    if (val) p.set(field, val);
+  });
+  p.set('limit', String(pageSize));
+  p.set('offset', String((page - 1) * pageSize));
   return p.toString();
 }
 
@@ -18,12 +23,19 @@ function showError(msg) {
   el.style.display = 'block';
 }
 
+function limpiarFiltros() {
+  ['documento', 'apellido', 'nombres', 'email'].forEach((field) => {
+    const el = document.getElementById(field);
+    if (el) el.value = '';
+  });
+}
+
 async function cargar() {
   document.getElementById('error').style.display = 'none';
   try {
-    const data = await api.get(`/estudiantes?${qs()}`);
+    const data = await api.get(`/api/v2/estudiantes?${qs()}`);
     if (!data) return;
-    document.getElementById('pag').textContent = String(data.page);
+    document.getElementById('pag').textContent = String(page);
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
     (data.items || []).forEach((s) => {
@@ -33,10 +45,10 @@ async function cargar() {
         <td>${s.apellido}</td>
         <td>${s.nombres}</td>
         <td>${s.email}</td>
-        <td>
-          <a class="btn btn-sm btn-outline-primary" href="estudiantes-detalle.html?id=${s.id_estudiante}">Ver</a>
-          <a class="btn btn-sm btn-outline-secondary" href="estudiantes-editar.html?id=${s.id_estudiante}">Editar</a>
-          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${s.id_estudiante}">Borrar</button>
+        <td class="fcad-tabla-acciones">
+          <a class="btn btn-sm btn-outline-primary" href="estudiantes-detalle.html?id=${s.idEstudiante}">Ver</a>
+          <a class="btn btn-sm btn-outline-secondary" href="estudiantes-editar.html?id=${s.idEstudiante}">Editar</a>
+          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${s.idEstudiante}">Borrar</button>
         </td>`;
       tbody.appendChild(tr);
     });
@@ -45,15 +57,16 @@ async function cargar() {
         if (!window.confirm('¿Eliminar este estudiante?')) return;
         const id = btn.getAttribute('data-id');
         try {
-          await api.del(`/estudiantes/${id}`);
+          await api.del(`/api/v2/estudiantes/${id}`);
           await cargar();
         } catch (e) {
           showError(e.message || 'No se pudo eliminar.');
         }
       });
     });
-    document.getElementById('btn-prev').disabled = data.page <= 1;
-    document.getElementById('btn-next').disabled = !data.hasNext;
+    const hasNext = (page - 1) * pageSize + (data.items || []).length < (data.total || 0);
+    document.getElementById('btn-prev').disabled = page <= 1;
+    document.getElementById('btn-next').disabled = !hasNext;
   } catch (e) {
     showError(e.message || 'Error al cargar estudiantes.');
   }
@@ -62,6 +75,11 @@ async function cargar() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('buscar').addEventListener('submit', (e) => {
     e.preventDefault();
+    page = 1;
+    cargar();
+  });
+  document.getElementById('btn-limpiar').addEventListener('click', () => {
+    limpiarFiltros();
     page = 1;
     cargar();
   });
