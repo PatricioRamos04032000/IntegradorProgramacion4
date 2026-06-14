@@ -26,4 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (e) {
     showError(e.message || 'No se pudo cargar el panel.');
   }
+  const name = sessionStorage.getItem('nombreUsuario') || 'Usuario';
+  document.getElementById('username').textContent = name;
 });

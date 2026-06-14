@@ -25,11 +25,12 @@
       </ul>
     </nav>
     <main class="fcad-main p-4">
-      <h2 class="h4 mb-3">Panel de inicio</h2>
+      <p class="lead greeting">Bienvenido, <span id="username">Usuario</span></p>
+<h2 class="h4 mb-3">Panel de inicio</h2>
       <div id="error" class="alert alert-danger" style="display: none" role="alert"></div>
       <div class="row g-3 mb-4">
         <div class="col-md-6">
-          <div class="card border-primary">
+          <div class="card border-primary bg-cursos-card">
             <div class="card-body">
               <p class="text-muted mb-1">Cursos activos</p>
               <p class="display-6 mb-0" id="total-cursos">—</p>
@@ -37,7 +38,7 @@
           </div>
         </div>
         <div class="col-md-6">
-          <div class="card border-success">
+          <div class="card border-success bg-estudiantes-card">
             <div class="card-body">
               <p class="text-muted mb-1">Estudiantes activos</p>
               <p class="display-6 mb-0" id="total-estudiantes">—</p>

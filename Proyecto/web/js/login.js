@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (data.token) {
         setToken(data.token);
+        sessionStorage.setItem('nombreUsuario', nombreUsuario);
         window.location.href = 'index.html';
       } else {
         showError('Respuesta del servidor sin token.');
