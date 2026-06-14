@@ -1,17 +1,53 @@
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* ─── Paleta de colores ──────────────────────────────────────────────────────
+   Primario:   Azul pizarra oscuro   hsl(222, 47%, 18%)
+   Secundario: Azul pizarra medio    hsl(222, 40%, 24%)
+   Acento:     Índigo suave          hsl(226, 70%, 55%)
+   Hover nav:  Slate con transparencia
+   Fondo:      Gris muy claro        hsl(220, 20%, 97%)
+   Superficie: Blanco puro
+──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --color-primary:      hsl(222, 47%, 18%);
+  --color-primary-dark: hsl(222, 50%, 13%);
+  --color-primary-hover:hsl(222, 40%, 26%);
+  --color-accent:       hsl(226, 70%, 55%);
+  --color-accent-light: hsl(226, 80%, 95%);
+  --color-bg:           hsl(220, 20%, 97%);
+  --color-surface:      #ffffff;
+  --color-text:         hsl(222, 20%, 15%);
+  --color-muted:        hsl(220, 10%, 52%);
+  --color-border:       hsl(220, 15%, 88%);
+  --color-card-cursos:  hsl(226, 60%, 95%);
+  --color-card-est:     hsl(168, 50%, 93%);
+  --color-card-insc:    hsl(190, 60%, 94%);
+  --nav-width:          min(240px, 100%);
 }
 
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ─── Header ────────────────────────────────────────────────────────────────── */
 .fcad-header {
-  background-color: rgb(64, 3, 64);
+  background-color: var(--color-primary);
   color: #fff;
+  border-bottom: 3px solid var(--color-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .fcad-titulo {
   margin: 0;
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
 }
 
+/* ─── Nav toggler (mobile) ──────────────────────────────────────────────────── */
 .fcad-nav-toggler {
   padding: 0.25rem 0.5rem;
   background: transparent;
@@ -29,55 +65,94 @@ body {
   background-size: 100%;
 }
 
+/* ─── Layout principal ──────────────────────────────────────────────────────── */
 .fcad-contenedor-principal {
   display: flex;
   min-height: calc(100vh - 72px);
 }
 
+/* ─── Sidebar nav ───────────────────────────────────────────────────────────── */
 .fcad-nav {
-  width: min(260px, 100%);
-  background-color: rgb(43, 1, 43);
-}
-
-/* Custom background colors for summary cards */
-.bg-cursos-card {
-  background-color: hsl(260, 30%, 95%); /* light purple */
-  color: #212529; /* dark text for contrast */
-}
-
-.bg-estudiantes-card {
-  background-color: hsl(120, 30%, 95%); /* light green */
-  color: #212529; /* dark text for contrast */
+  width: var(--nav-width);
+  background-color: var(--color-primary-dark);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .fcad-nav ul {
   margin: 0;
-  padding: 0;
+  padding: 0.5rem 0;
   list-style: none;
 }
 
 .fcad-nav ul li a {
   display: block;
-  padding: 0.85rem 1.25rem;
-  color: #fff;
+  padding: 0.75rem 1.25rem;
+  color: hsl(220, 40%, 80%);
   text-decoration: none;
+  font-size: 0.925rem;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .fcad-nav ul li a:hover,
 .fcad-nav ul li a.active {
-  background-color: rgb(95, 7, 95);
+  background-color: var(--color-primary-hover);
+  color: #fff;
+  border-left-color: var(--color-accent);
 }
 
+/* ─── Área principal ─────────────────────────────────────────────────────────── */
 .fcad-main {
   flex: 1;
-  background-color: #fff;
+  background-color: var(--color-surface);
 }
 
+/* ─── Tarjetas de resumen del dashboard ─────────────────────────────────────── */
+.bg-cursos-card {
+  background-color: var(--color-card-cursos);
+  color: var(--color-text);
+  border-left: 4px solid var(--color-accent);
+}
+
+.bg-estudiantes-card {
+  background-color: var(--color-card-est);
+  color: var(--color-text);
+  border-left: 4px solid hsl(168, 55%, 40%);
+}
+
+.bg-inscripciones-card {
+  background-color: var(--color-card-insc);
+  color: var(--color-text);
+  border-left: 4px solid hsl(190, 70%, 40%);
+}
+
+/* ─── Paginación ─────────────────────────────────────────────────────────────── */
 .fcad-paginacion {
   flex-wrap: wrap;
   gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+  margin-top: 0.5rem;
 }
 
+/* ─── Logout link ────────────────────────────────────────────────────────────── */
+.fcad-header a.text-white {
+  opacity: 0.75;
+  font-size: 0.875rem;
+  transition: opacity 0.15s;
+}
+.fcad-header a.text-white:hover {
+  opacity: 1;
+}
+
+/* ─── Greeting ───────────────────────────────────────────────────────────────── */
+.greeting {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* ─── Responsive: desktop ─────────────────────────────────────────────────── */
 @media (min-width: 992px) {
   .fcad-nav-toggler {
     display: none !important;
@@ -90,6 +165,7 @@ body {
   }
 }
 
+/* ─── Responsive: tablet / mobile ────────────────────────────────────────── */
 @media (max-width: 991.98px) {
   .fcad-contenedor-principal {
     flex-direction: column;
@@ -128,9 +204,4 @@ body {
   .fcad-tabla-acciones .btn {
     width: 100%;
   }
-}
-
-.greeting {
-  font-weight: 600;
-  text-decoration: underline;
 }
