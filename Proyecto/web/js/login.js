@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (data.accessToken) {
         setAccessToken(data.accessToken);
+        const displayName = data.user?.nombre_usuario || data.user?.nombre || nombreUsuario;
+        sessionStorage.setItem('nombreUsuario', displayName);
         window.location.href = 'index.html';
       } else {
         showError('Respuesta del servidor sin access token.');

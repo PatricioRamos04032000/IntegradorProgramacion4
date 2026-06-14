@@ -39,6 +39,17 @@ body {
   background-color: rgb(43, 1, 43);
 }
 
+/* Custom background colors for summary cards */
+.bg-cursos-card {
+  background-color: hsl(260, 30%, 95%); /* light purple */
+  color: #212529; /* dark text for contrast */
+}
+
+.bg-estudiantes-card {
+  background-color: hsl(120, 30%, 95%); /* light green */
+  color: #212529; /* dark text for contrast */
+}
+
 .fcad-nav ul {
   margin: 0;
   padding: 0;
@@ -117,4 +128,9 @@ body {
   .fcad-tabla-acciones .btn {
     width: 100%;
   }
+}
+
+.greeting {
+  font-weight: 600;
+  text-decoration: underline;
 }

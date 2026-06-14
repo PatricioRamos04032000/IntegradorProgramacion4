@@ -119,6 +119,9 @@ async function cargar() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await requireAuth();
+  const name = sessionStorage.getItem('nombreUsuario') || 'Usuario';
+  const usernameEl = document.getElementById('username');
+  if (usernameEl) usernameEl.textContent = name;
   bindPaginationControls({
     ...pagElements(),
     getOffset: () => offset,

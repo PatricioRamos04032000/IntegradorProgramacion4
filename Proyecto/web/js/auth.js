@@ -13,6 +13,7 @@ export function setAccessToken(token) {
 export function clearSession() {
   sessionStorage.removeItem(ACCESS_KEY);
   sessionStorage.removeItem(LEGACY_KEY);
+  sessionStorage.removeItem('nombreUsuario');
 }
 
 export function getToken() {
