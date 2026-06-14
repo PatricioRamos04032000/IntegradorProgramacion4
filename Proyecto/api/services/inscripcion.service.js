@@ -1,7 +1,15 @@
 import pool from '../db/pool.js';
 import InscripcionRepository from '../repositories/inscripcion.repository.js';
 import InscripcionResponseDTO from '../dtos/inscripcion.response.dto.js';
+import { pipeCertificadoInscripcionPdf } from './certificadoInscripcionPdf.service.js';
+import {
+  assertElegibleParaCertificado,
+  buildContentDisposition,
+} from '../utils/certificado.util.js';
 import createError from 'http-errors';
+
+/** INSCRIPCIÓN ABIERTA (cursos_estados.id_curso_estado = 2). */
+const CURSO_ESTADO_INSCRIPCION_ABIERTA = 2;
 
 export default class InscripcionService {
   constructor() {
@@ -43,8 +51,11 @@ export default class InscripcionService {
       if (!cursoRow) {
         throw createError(400, 'Curso no encontrado.');
       }
-      if (cursoRow.id_curso_estado !== 1) {
+      if (cursoRow.curso_estado_activo !== 1) {
         throw createError(400, 'El curso no está habilitado para inscripciones.');
+      }
+      if (cursoRow.id_curso_estado !== CURSO_ESTADO_INSCRIPCION_ABIERTA) {
+        throw createError(400, 'Solo se puede inscribir en cursos con inscripción abierta.');
       }
       if (cursoRow.inscriptos_actuales >= cursoRow.inscriptos_max) {
         throw createError(400, 'El curso ha alcanzado el cupo máximo de inscriptos.');
@@ -75,12 +86,24 @@ export default class InscripcionService {
     return true;
   }
 
-  /** Para PDF: devuelve fila cruda con campos snake_case usados por el generador. */
-  async getRawById(id) {
-    const row = await this.repository.getById(id);
-    if (!row) {
-      throw createError(404, 'Inscripción no encontrada.');
-    }
+  async obtenerInscripcionParaCertificado(id) {
+    const row = await this.repository.getByIdParaCertificado(id);
+    assertElegibleParaCertificado(row);
     return row;
+  }
+
+  async generarCertificadoPdf(id, res, { disposition = 'attachment' } = {}) {
+    const inscripcion = await this.obtenerInscripcionParaCertificado(id);
+    const idInscripcion = inscripcion.id_inscripcion || id;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      buildContentDisposition(idInscripcion, inscripcion.apellido, disposition),
+    );
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
+    await pipeCertificadoInscripcionPdf(inscripcion, res);
   }
 }

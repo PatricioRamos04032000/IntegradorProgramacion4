@@ -1,5 +1,4 @@
 import InscripcionService from '../services/inscripcion.service.js';
-import { pipeCertificadoInscripcionPdf } from '../services/certificadoInscripcionPdf.service.js';
 
 export default class InscripcionesController {
   constructor() {
@@ -23,14 +22,9 @@ export default class InscripcionesController {
   };
 
   certificadoPdf = async (req, res) => {
-    const inscripcion = await this.service.getRawById(req.params.id);
-    const id = inscripcion.id_inscripcion || req.params.id;
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="certificado-inscripcion-${id}.pdf"`,
-    );
-    pipeCertificadoInscripcionPdf(inscripcion, res);
+    await this.service.generarCertificadoPdf(req.params.id, res, {
+      disposition: req.query.disposition,
+    });
   };
 
   remove = async (req, res) => {

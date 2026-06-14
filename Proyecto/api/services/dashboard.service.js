@@ -1,27 +1,41 @@
-import pool from '../db/pool.js';
+import DashboardRepository from '../repositories/dashboard.repository.js';
+import DashboardResponseDTO from '../dtos/dashboard.response.dto.js';
+import DashboardTotalesResponseDTO from '../dtos/dashboardTotales.response.dto.js';
+import DashboardCursoRapidoResponseDTO from '../dtos/dashboardCursoRapido.response.dto.js';
+
+const DEFAULT_LIMIT = 10;
+const DEFAULT_OFFSET = 0;
 
 export default class DashboardService {
-  async getDashboard() {
-    const [cursosResult, estudiantesResult, linksRapidosResult] = await Promise.all([
-      pool.query('SELECT COUNT(*)::int AS total FROM cursos WHERE id_curso_estado = 1'),
-      pool.query('SELECT COUNT(*)::int AS total FROM estudiantes WHERE activo = 1'),
-      pool.query(`
-        SELECT id_curso, nombre, inscriptos_max
-          FROM cursos
-         WHERE id_curso_estado = 1
-         ORDER BY fecha_inicio DESC
-         LIMIT 5
-      `),
+  constructor() {
+    this.repository = new DashboardRepository();
+  }
+
+  async getDashboard({ limit = DEFAULT_LIMIT, offset = DEFAULT_OFFSET } = {}) {
+    const [
+      totalCursos,
+      totalEstudiantes,
+      totalInscripciones,
+      cursosResult,
+    ] = await Promise.all([
+      this.repository.countCursosActivos(),
+      this.repository.countEstudiantesActivos(),
+      this.repository.countInscripcionesActivas(),
+      this.repository.getCursosRapidos(limit, offset),
     ]);
 
-    return {
-      totalCursos: cursosResult.rows[0].total,
-      totalEstudiantes: estudiantesResult.rows[0].total,
-      cursosRapidos: linksRapidosResult.rows.map((c) => ({
-        idCurso: c.id_curso,
-        nombre: c.nombre,
-        inscriptosMax: c.inscriptos_max,
-      })),
-    };
+    return new DashboardResponseDTO({
+      totales: new DashboardTotalesResponseDTO({
+        cursos: totalCursos,
+        estudiantes: totalEstudiantes,
+        inscripciones: totalInscripciones,
+      }),
+      cursosRapidos: {
+        items: cursosResult.rows.map((c) => new DashboardCursoRapidoResponseDTO(c)),
+        total: cursosResult.total,
+        limit,
+        offset,
+      },
+    });
   }
 }

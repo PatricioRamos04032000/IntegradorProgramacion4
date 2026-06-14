@@ -2,23 +2,30 @@ import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
 import { descargarCertificado } from './certificado.js';
 
-requireAuth();
-
 function idFromQuery() {
   const id = new URLSearchParams(window.location.search).get('id');
   return id && /^\d+$/.test(id) ? id : null;
 }
 
-function showError(msg) {
+function showPageError(msg) {
   const el = document.getElementById('error');
   el.textContent = msg;
   el.style.display = 'block';
 }
 
+function showModalError(msg) {
+  const el = document.getElementById('errorModal');
+  document.getElementById('errorModalBody').textContent = msg;
+  const modal = new bootstrap.Modal(el);
+  el.addEventListener('hide.bs.modal', () => document.activeElement?.blur(), { once: true });
+  modal.show();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  await requireAuth();
   const id = idFromQuery();
   if (!id) {
-    showError('Falta id en la URL.');
+    showPageError('Falta id en la URL.');
     return;
   }
 
@@ -35,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <p class="fs-5 text-primary text-center">${ins.cursoNombre}</p>
       <p class="text-end small text-muted mb-0">Fecha de inscripción: ${fecha}</p>`;
   } catch (e) {
-    showError(e.message || 'No se pudo cargar la inscripción.');
+    showPageError(e.message || 'No se pudo cargar la inscripción.');
     return;
   }
 
@@ -43,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       await descargarCertificado(id);
     } catch (e) {
-      window.alert(e.message || 'Error de red al descargar el certificado.');
+      showModalError(e.message || 'No se pudo descargar el certificado.');
     }
   });
 });

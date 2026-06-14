@@ -4,6 +4,7 @@ import inscripcionesFindAllValidation from '../validators/inscripcionesFindAll.v
 import inscripcionesFindAllTransform from '../transforms/inscripcionesFindAll.transform.js';
 import inscripcionesBodyValidation from '../validators/inscripcionesBody.validation.js';
 import inscripcionesIdParamValidation from '../validators/inscripcionesIdParam.validation.js';
+import certificadoQueryValidation from '../validators/certificadoQuery.validation.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
 const router = express.Router();
@@ -66,6 +67,14 @@ const inscripcionesController = new InscripcionesController();
  *         name: id
  *         required: true
  *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: disposition
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [attachment, inline]
+ *           default: attachment
+ *         description: attachment fuerza descarga; inline permite previsualizar en el navegador
  *     responses:
  *       200:
  *         description: Archivo PDF
@@ -74,8 +83,55 @@ const inscripcionesController = new InscripcionesController();
  *             schema:
  *               type: string
  *               format: binary
+ *       400:
+ *         description: Parámetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg: { type: string }
+ *       401:
+ *         description: Token ausente, inválido o expirado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string }
  *       404:
  *         description: Inscripción no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Inscripción no encontrada.
+ *       422:
+ *         description: Inscripción, estudiante o curso no elegible para certificado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: La inscripción está cancelada; no se puede emitir certificado.
+ *       500:
+ *         description: Error interno al generar el PDF
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string }
  */
 
 /**
@@ -115,7 +171,11 @@ const inscripcionesController = new InscripcionesController();
 
 router.get('/', [inscripcionesFindAllValidation, inscripcionesFindAllTransform], asyncHandler(inscripcionesController.browse));
 router.post('/', inscripcionesBodyValidation, asyncHandler(inscripcionesController.add));
-router.get('/:id(\\d+)/certificado', inscripcionesIdParamValidation, asyncHandler(inscripcionesController.certificadoPdf));
+router.get(
+  '/:id(\\d+)/certificado',
+  [...inscripcionesIdParamValidation, ...certificadoQueryValidation],
+  asyncHandler(inscripcionesController.certificadoPdf),
+);
 router.get('/:id(\\d+)', inscripcionesIdParamValidation, asyncHandler(inscripcionesController.read));
 router.delete('/:id(\\d+)', inscripcionesIdParamValidation, asyncHandler(inscripcionesController.remove));
 

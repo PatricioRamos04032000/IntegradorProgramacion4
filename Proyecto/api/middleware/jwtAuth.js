@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken';
+import UsuarioRepository from '../repositories/usuario.repository.js';
 
-export default function jwtAuth(req, res, next) {
+const usuarioRepo = new UsuarioRepository();
+
+export default async function jwtAuth(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const [scheme, token] = authHeader.split(' ');
 
@@ -15,11 +18,17 @@ export default function jwtAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, secret);
+    const usuario = await usuarioRepo.obtenerPorId(decoded.id_usuario);
+
+    if (!usuario) {
+      return res.status(401).json({ error: 'No autorizado: usuario no encontrado o inactivo' });
+    }
+
     req.user = {
-      id_usuario: decoded.id_usuario,
-      nombre_usuario: decoded.nombre_usuario,
-      nombre: decoded.nombre,
-      apellido: decoded.apellido,
+      id_usuario: usuario.id_usuario,
+      nombre_usuario: usuario.nombre_usuario,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
     };
     return next();
   } catch (err) {

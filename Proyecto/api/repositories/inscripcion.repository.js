@@ -108,6 +108,30 @@ export default class InscripcionRepository {
     return result.rows[0] || null;
   }
 
+  async getByIdParaCertificado(id) {
+    const result = await pool.query(
+      `
+      SELECT i.id_inscripcion,
+             i.id_inscripcion_estado,
+             i.fecha_hora_inscripcion,
+             c.nombre AS curso_nombre,
+             c.id_curso_estado,
+             cs.es_activo AS curso_estado_activo,
+             e.apellido,
+             e.nombres,
+             e.documento,
+             e.activo
+        FROM inscripciones i
+        JOIN cursos c ON i.id_curso = c.id_curso
+        JOIN cursos_estados cs ON cs.id_curso_estado = c.id_curso_estado
+        JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
+       WHERE i.id_inscripcion = $1
+      `,
+      [Number(id)],
+    );
+    return result.rows[0] || null;
+  }
+
   async existeActivaPorCursoYEstudiante(client, idCurso, idEstudiante) {
     const result = await client.query(
       `
@@ -122,9 +146,13 @@ export default class InscripcionRepository {
   async obtenerCursoParaCupo(client, idCurso) {
     const result = await client.query(
       `
-      SELECT inscriptos_max, id_curso_estado,
-        (SELECT COUNT(*) FROM inscripciones WHERE id_curso = $1 AND id_inscripcion_estado = 1) AS inscriptos_actuales
-        FROM cursos WHERE id_curso = $1
+      SELECT c.inscriptos_max,
+             c.id_curso_estado,
+             cs.es_activo AS curso_estado_activo,
+             (SELECT COUNT(*) FROM inscripciones WHERE id_curso = $1 AND id_inscripcion_estado = 1) AS inscriptos_actuales
+        FROM cursos c
+        JOIN cursos_estados cs ON cs.id_curso_estado = c.id_curso_estado
+       WHERE c.id_curso = $1
       `,
       [idCurso],
     );

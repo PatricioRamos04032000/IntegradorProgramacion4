@@ -51,7 +51,7 @@ Trabajo Final Integrador de **Programacion IV (FCAD -- UNER)**, 1er cuatrimestre
         ├── js/
         │   ├── bootstrap.bundle.min.js  Bootstrap JS local
         │   ├── api.js               Helper fetch con JWT
-        │   ├── auth.js              Token en sessionStorage
+        │   ├── auth.js              Access token en sessionStorage + helpers JWT
         │   ├── config.js            API_BASE
         │   ├── cursos.js            Listado (paginacion, filtros, modal errores)
         │   ├── cursos-nuevo.js      Crear curso
@@ -110,8 +110,11 @@ cp .env.example .env
 | `PORT` | `3000` | Puerto de la API |
 | `FRONT_ORIGIN` | `http://127.0.0.1:5500` | Origen permitido por CORS |
 | `DB_*` | ... | Conexion a PostgreSQL |
-| `JWT_SECRET` | ... | Firma de tokens JWT |
-| `JWT_EXPIRES_IN` | `8h` | Duracion del token |
+| `JWT_SECRET` | ... | Firma del access token JWT |
+| `JWT_ACCESS_EXPIRES_IN` | `15m` | Duracion del access token |
+| `JWT_EXPIRES_IN` | `8h` | Alias legacy de access token |
+| `JWT_REFRESH_SECRET` | ... | Firma del refresh token (distinto al access) |
+| `JWT_REFRESH_EXPIRES_IN` | `7d` | Duracion del refresh token (cookie httpOnly) |
 | `DEFAULT_USER_ID` | `1` | Reservado para auditoria sin JWT |
 
 > `.env` esta en el `.gitignore` y no se sube al repo.
@@ -128,17 +131,30 @@ La API queda en [http://localhost:3000](http://localhost:3000).
 
 ### 4. Levantar el front
 
-La API sirve el front estatico desde `Proyecto/web/`. Al acceder a `http://localhost:3000/` te redirige a login.
+La API sirve el front estatico desde `Proyecto/web/`. Al acceder a `http://localhost:3000/` te redirige a login. **Recomendado** para que funcione la cookie httpOnly del refresh token (same-origin).
 
-Tambien podes abrir `Proyecto/web/` con Live Server, ajustando `FRONT_ORIGIN` en `.env` y `API_BASE` en `web/js/config.js`.
+Tambien podes abrir `Proyecto/web/` con Live Server, ajustando `FRONT_ORIGIN` en `.env` y `API_BASE` en `web/js/config.js` (la renovacion silenciosa de sesion puede no funcionar cross-origin sin HTTPS).
+
+### Migracion de refresh tokens
+
+Ejecutar una vez contra la base configurada en `.env`:
+
+```bash
+psql -h localhost -U postgres -d fcad_cursos -f Proyecto/api/migrations/001_refresh_tokens.sql
+```
 
 ## Rutas API
 
 ### Autenticacion
 
-`POST /api/v2/auth/login` con JSON `{ nombreUsuario, contrasenia }` — devuelve `{ token, user }`.
+| Metodo | Ruta | Descripcion |
+|--------|------|-------------|
+| `POST` | `/api/v2/auth/login` | `{ nombreUsuario, contrasenia }` → `{ accessToken, user }` + cookie refresh |
+| `POST` | `/api/v2/auth/refresh` | Renueva access token (cookie refresh) |
+| `POST` | `/api/v2/auth/logout` | Revoca refresh y limpia cookie |
+| `GET` | `/api/v2/auth/me` | Usuario autenticado (Bearer) |
 
-El resto de rutas v2 requieren `Authorization: Bearer <token>`.
+El resto de rutas v2 requieren `Authorization: Bearer <accessToken>`.
 
 ### Recursos v2 (camelCase)
 
@@ -149,7 +165,7 @@ Documentacion Swagger en **[/docs](http://localhost:3000/docs)**.
 | Cursos | `/api/v2/cursos` (+ `/estados`) |
 | Estudiantes | `/api/v2/estudiantes` |
 | Inscripciones | `/api/v2/inscripciones` (+ `/:id/certificado` PDF) |
-| Dashboard | `/api/v2/dashboard` |
+| Dashboard | `/api/v2/dashboard` — `{ totales, cursosRapidos: { items, total, limit, offset } }` |
 
 #### Cursos
 
@@ -166,6 +182,26 @@ Documentacion Swagger en **[/docs](http://localhost:3000/docs)**.
 #### Estudiantes / Inscripciones
 
 Mismos verbos CRUD bajo `/api/v2/estudiantes` e `/api/v2/inscripciones`. Body de inscripcion: `{ idCurso, idEstudiante }`.
+
+#### Dashboard
+
+`GET /api/v2/dashboard` devuelve totales del panel y accesos rápidos a cursos:
+
+```json
+{
+  "totales": { "cursos": 12, "estudiantes": 45, "inscripciones": 78 },
+  "cursosRapidos": {
+    "items": [{ "idCurso": 1, "nombre": "...", "inscriptosMax": 30, "inscriptosActuales": 15 }],
+    "total": 12,
+    "limit": 10,
+    "offset": 0
+  }
+}
+```
+
+Query params opcionales: `limit` (default 10), `offset` (default 0). Los cursos se ordenan por cantidad de inscriptos activos (mayor a menor).
+
+Los conteos consideran solo registros activos. Para cursos, **activo** significa `cursos_estados.es_activo = 1` (BORRADOR, INSCRIPCIÓN ABIERTA o INSCRIPCIÓN CERRADA; excluye ELIMINADO). Ese criterio aplica al dashboard y al certificado PDF. **Nueva inscripción:** solo cursos con `id_curso_estado = 2` (INSCRIPCIÓN ABIERTA).
 
 **Estudiantes — filtros de listado:** además del atajo `q` (apellido o documento), se pueden combinar `documento`, `apellido`, `nombres` y `email` como query params opcionales (búsqueda parcial con `ILIKE`).
 

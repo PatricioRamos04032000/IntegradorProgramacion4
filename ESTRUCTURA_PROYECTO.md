@@ -33,11 +33,13 @@ Proyecto/api/
 ├── routes/                   # *.routes.js (auth, cursos, estudiantes, inscripciones, dashboard)
 ├── controllers/              # HTTP fino (req/res)
 ├── services/                 # Lógica de negocio + BaseService
-├── repositories/             # SQL parametrizado
+├── repositories/             # SQL parametrizado (+ refreshToken.repository.js)
+├── migrations/               # SQL incremental (001_refresh_tokens.sql)
+├── utils/                    # authCookies.js
 ├── dtos/                     # snake_case (BD) → camelCase (API)
 ├── validators/               # express-validator
 ├── transforms/               # req.filter / order / limit / offset
-├── middleware/               # jwtAuth, asyncHandler, errorHandlers, handleValidationErrors
+├── middleware/               # jwtAuth, loginRateLimit, asyncHandler, errorHandlers, handleValidationErrors
 └── CHANGELOG.md
 ```
 
@@ -66,7 +68,7 @@ Request
   → DTO (camelCase) → JSON Response
 ```
 
-Todas las rutas de negocio bajo `/api/v2/*` (excepto `POST /api/v2/auth/login`) requieren **`Authorization: Bearer <JWT>`**.
+Todas las rutas de negocio bajo `/api/v2/*` (excepto `POST /api/v2/auth/login`, `/refresh`, `/logout`) requieren **`Authorization: Bearer <accessToken>`**. El middleware `jwtAuth` revalida que el usuario siga activo en BD.
 
 ---
 
@@ -76,7 +78,7 @@ Todas las rutas de negocio bajo `/api/v2/*` (excepto `POST /api/v2/auth/login`) 
 
 | Archivo | Montaje | Endpoints principales |
 |---------|---------|----------------------|
-| `auth.routes.js` | `/api/v2/auth` | `POST /login` |
+| `auth.routes.js` | `/api/v2/auth` | `POST /login`, `/refresh`, `/logout`, `GET /me` |
 | `cursos.routes.js` | `/api/v2/cursos` | CRUD, `GET /estados`, `GET /:id/inscriptos` |
 | `estudiantes.routes.js` | `/api/v2/estudiantes` | CRUD + filtros múltiples en listado |
 | `inscripciones.routes.js` | `/api/v2/inscripciones` | Browse/Add/Read/Delete + `GET /:id/certificado` (PDF) |
@@ -88,7 +90,7 @@ Documentación OpenAPI en **`/docs`** (JSDoc `@openapi` en cada archivo de rutas
 
 | Archivo | Dominio |
 |---------|---------|
-| `auth.controller.js` | Login JWT |
+| `auth.controller.js` | Login, refresh, logout, me |
 | `cursos.controller.js` | Cursos + inscriptos por curso |
 | `estudiantes.controller.js` | Estudiantes |
 | `inscripciones.controller.js` | Inscripciones + certificado PDF |
@@ -96,17 +98,18 @@ Documentación OpenAPI en **`/docs`** (JSDoc `@openapi` en cada archivo de rutas
 
 ### 4.3 `services/` y `repositories/`
 
-Un par service/repository por recurso. `cursos.service.js` delega inscriptos a `inscripcion.repository.getActivasByCurso`. Certificado PDF en `certificadoInscripcionPdf.service.js`.
+Un par service/repository por recurso. `cursos.service.js` delega inscriptos a `inscripcion.repository.getActivasByCurso`. `dashboard.repository.js` concentra los conteos del panel. Certificado PDF en `certificadoInscripcionPdf.service.js`.
 
 ### 4.4 `dtos/`
 
-Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos de un curso.
+Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos de un curso y `dashboard*.response.dto.js` para el panel (`totales`, `cursosRapidos`).
 
 ### 4.5 `middleware/`
 
 | Archivo | Uso |
 |---------|-----|
-| `jwtAuth.js` | Valida Bearer token en rutas v2 |
+| `jwtAuth.js` | Valida Bearer + revalida usuario activo en BD |
+| `loginRateLimit.js` | Rate limit en POST /login (5 / 15 min por IP) |
 | `asyncHandler.js` | Propaga errores async al error handler |
 | `handleValidationErrors.js` | Respuesta 400 con `{ errors: [...] }` |
 | `errorHandlers.js` | 404 y errores → JSON `{ error: "..." }` |
@@ -117,7 +120,10 @@ Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos
 
 ### Auth
 
-- `POST /api/v2/auth/login` — `{ nombreUsuario, contrasenia }` → `{ token, user }`
+- `POST /api/v2/auth/login` — `{ nombreUsuario, contrasenia }` → `{ accessToken, user }` + cookie refresh httpOnly
+- `POST /api/v2/auth/refresh` — renueva access token (cookie)
+- `POST /api/v2/auth/logout` — revoca sesion
+- `GET /api/v2/auth/me` — usuario autenticado (Bearer)
 
 ### Cursos (`/api/v2/cursos`, JWT)
 
@@ -138,7 +144,18 @@ Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos
 
 ### Dashboard
 
-- `GET /api/v2/dashboard` — `{ totalCursos, totalEstudiantes, cursosRapidos }`
+- `GET /api/v2/dashboard` — `{ totales, cursosRapidos: { items, total, limit, offset } }` (query: `limit`, `offset`)
+
+Criterios de conteo:
+
+| Campo | Criterio |
+|-------|----------|
+| `totales.cursos` | `cursos_estados.es_activo = 1` (no eliminados) |
+| `totales.estudiantes` | `activo = 1` |
+| `totales.inscripciones` | `id_inscripcion_estado = 1` (no canceladas) |
+| `cursosRapidos` | Cursos activos paginados, ordenados por `inscriptosActuales` DESC |
+
+Certificado PDF usa curso activo (`cursos_estados.es_activo = 1`). **Alta de inscripción** exige además `id_curso_estado = 2` (INSCRIPCIÓN ABIERTA) y curso no eliminado.
 
 ---
 

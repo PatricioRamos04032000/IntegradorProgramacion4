@@ -1,17 +1,18 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+import {
+  appendPageParams,
+  bindPaginationControls,
+  updatePaginationBar,
+} from './pagination.js';
 
-requireAuth();
-
-let page = 1;
-const pageSize = 10;
+let offset = 0;
 
 function qs() {
   const q = document.getElementById('q').value.trim();
   const p = new URLSearchParams();
   if (q) p.set('q', q);
-  p.set('limit', String(pageSize));
-  p.set('offset', String((page - 1) * pageSize));
+  appendPageParams(p, offset);
   return p.toString();
 }
 
@@ -21,12 +22,20 @@ function showError(msg) {
   el.style.display = 'block';
 }
 
+function pagElements() {
+  return {
+    pagInfoEl: document.getElementById('pag-info'),
+    btnPrevEl: document.getElementById('btn-prev'),
+    btnNextEl: document.getElementById('btn-next'),
+  };
+}
+
 async function cargar() {
   document.getElementById('error').style.display = 'none';
   try {
     const data = await api.get(`/api/v2/inscripciones?${qs()}`);
     if (!data) return;
-    document.getElementById('pag').textContent = String(page);
+
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
     (data.items || []).forEach((ins) => {
@@ -45,6 +54,7 @@ async function cargar() {
         </td>`;
       tbody.appendChild(tr);
     });
+
     document.querySelectorAll('.btn-del').forEach((btn) => {
       btn.addEventListener('click', async () => {
         if (!window.confirm('¿Dar de baja esta inscripción?')) return;
@@ -57,29 +67,30 @@ async function cargar() {
         }
       });
     });
-    const hasNext = (page - 1) * pageSize + (data.items || []).length < (data.total || 0);
-    document.getElementById('btn-prev').disabled = page <= 1;
-    document.getElementById('btn-next').disabled = !hasNext;
+
+    updatePaginationBar({
+      ...pagElements(),
+      offset,
+      total: data.total || 0,
+      entityLabel: 'inscripciones',
+    });
   } catch (e) {
     showError(e.message || 'Error al cargar inscripciones.');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await requireAuth();
   document.getElementById('buscar').addEventListener('submit', (e) => {
     e.preventDefault();
-    page = 1;
+    offset = 0;
     cargar();
   });
-  document.getElementById('btn-prev').addEventListener('click', () => {
-    if (page > 1) {
-      page -= 1;
-      cargar();
-    }
-  });
-  document.getElementById('btn-next').addEventListener('click', () => {
-    page += 1;
-    cargar();
+  bindPaginationControls({
+    ...pagElements(),
+    getOffset: () => offset,
+    setOffset: (n) => { offset = n; },
+    onChange: cargar,
   });
   cargar();
 });

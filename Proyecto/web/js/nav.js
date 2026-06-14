@@ -1,4 +1,5 @@
-import { clearToken } from './auth.js';
+import { API_BASE } from './config.js';
+import { clearSession } from './auth.js';
 
 function paginaActual() {
   const page = window.location.pathname.split('/').pop() || 'index.html';
@@ -61,9 +62,17 @@ function initNav() {
 
   const logout = document.getElementById('logout-link');
   if (logout) {
-    logout.addEventListener('click', (e) => {
+    logout.addEventListener('click', async (e) => {
       e.preventDefault();
-      clearToken();
+      try {
+        await fetch(`${API_BASE}/api/v2/auth/logout`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+      } catch {
+        // Si falla el logout remoto, igual limpiamos la sesion local.
+      }
+      clearSession();
       window.location.href = 'login.html';
     });
   }

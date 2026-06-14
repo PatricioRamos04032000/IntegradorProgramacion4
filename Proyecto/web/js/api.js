@@ -1,25 +1,52 @@
 import { API_BASE } from './config.js';
-import { getToken, clearToken } from './auth.js';
+import { getAccessToken, setAccessToken, clearSession } from './auth.js';
+import { parseErrorResponse } from './httpError.js';
 
-async function request(path, options = {}) {
+let refreshPromise = null;
+
+async function refreshSession() {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v2/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.accessToken) {
+        return false;
+      }
+      setAccessToken(data.accessToken);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+function buildHeaders(options, token) {
   const headers = { ...(options.headers || {}) };
   const hasBody = options.body !== undefined && options.body !== null;
   if (hasBody && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
-  const token = getToken();
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
+  return headers;
+}
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+function redirectToLogin() {
+  clearSession();
+  window.location.href = 'login.html';
+}
 
-  if (res.status === 401) {
-    clearToken();
-    window.location.href = 'login.html';
-    return null;
-  }
-
+async function parseResponse(res) {
   if (res.status === 204) {
     return null;
   }
@@ -35,11 +62,7 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
-    const msg =
-      data.error ||
-      (Array.isArray(data.errors) && data.errors.length ? data.errors.map(e => e.msg || e).join(' ') : null) ||
-      (Array.isArray(data.errores) && data.errores.length ? data.errores.join(' ') : null) ||
-      `Error ${res.status}`;
+    const msg = parseErrorResponse(res, text);
     const err = new Error(msg);
     err.body = data;
     err.status = res.status;
@@ -48,6 +71,58 @@ async function request(path, options = {}) {
 
   return data;
 }
+
+export async function authFetch(url, options = {}, retried = false) {
+  const token = getAccessToken();
+  const res = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: buildHeaders(options, token),
+  });
+
+  if (res.status === 401 && !retried) {
+    const refreshed = await refreshSession();
+    if (refreshed) {
+      return authFetch(url, options, true);
+    }
+    redirectToLogin();
+    return null;
+  }
+
+  if (res.status === 401) {
+    redirectToLogin();
+    return null;
+  }
+
+  return res;
+}
+
+async function request(path, options = {}, retried = false) {
+  const token = getAccessToken();
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: buildHeaders(options, token),
+  });
+
+  if (res.status === 401 && !retried) {
+    const refreshed = await refreshSession();
+    if (refreshed) {
+      return request(path, options, true);
+    }
+    redirectToLogin();
+    return null;
+  }
+
+  if (res.status === 401) {
+    redirectToLogin();
+    return null;
+  }
+
+  return parseResponse(res);
+}
+
+export { refreshSession };
 
 export const api = {
   get: (p) => request(p),

@@ -1,15 +1,14 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
 
-requireAuth();
-
 function showError(msg) {
   const el = document.getElementById('error');
   el.textContent = msg;
   el.style.display = 'block';
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await requireAuth();
   document.getElementById('form').addEventListener('submit', async (e) => {
     e.preventDefault();
     document.getElementById('error').style.display = 'none';

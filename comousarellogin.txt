@@ -1,26 +1,58 @@
-// Login y API (front en Proyecto/web, API en Proyecto/api)
+// Login y API (front servido desde la API en http://localhost:3000)
 //
-// 1) Ajustá la URL de la API en Proyecto/web/js/config.js (por defecto http://localhost:3000).
+// 1) Levantar la API: cd Proyecto/api && npm start
+//    Abrí http://localhost:3000/ → redirige a login.html
 //
-// 2) En Proyecto/api/.env definí FRONT_ORIGIN con el origen exacto del front (ej. Live Server):
-//    FRONT_ORIGIN=http://127.0.0.1:5500
+// 2) En Proyecto/api/.env definí JWT_SECRET, JWT_REFRESH_SECRET y FRONT_ORIGIN=http://localhost:3000
 //
-// 3) Login (desde login.html o consola del navegador):
+// 3) Ejecutar migración (solo la primera vez):
+//    psql -h localhost -U postgres -d fcad_cursos -f Proyecto/api/migrations/001_refresh_tokens.sql
+//
+// 4) Login (desde login.html o consola del navegador en http://localhost:3000):
 const API_BASE = 'http://localhost:3000';
-const { token, user } = await fetch(API_BASE + '/login', {
+const nombreUsuario = 'lbianchi'; // usuario del dump (ver dump base programacion.sql)
+const contrasenia = 'TU_CONTRASENIA'; // contraseña en texto plano (se hashea con SHA-256 en el servidor)
+
+const loginRes = await fetch(API_BASE + '/api/v2/auth/login', {
   method: 'POST',
+  credentials: 'include',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ nombre_usuario, contrasenia }),
-}).then((r) => r.json());
-sessionStorage.setItem('token', token);
+  body: JSON.stringify({ nombreUsuario, contrasenia }),
+});
+const { accessToken, user } = await loginRes.json();
+sessionStorage.setItem('accessToken', accessToken);
+// El refresh token queda en cookie httpOnly (refreshToken); no acceder desde JS.
 //
-// 4) Requests con JWT:
-fetch(API_BASE + '/estudiantes', {
-  headers: { Authorization: 'Bearer ' + sessionStorage.getItem('token') },
+// 5) Requests con access token:
+fetch(API_BASE + '/api/v2/estudiantes', {
+  credentials: 'include',
+  headers: { Authorization: 'Bearer ' + sessionStorage.getItem('accessToken') },
 });
 //
+// 6) Renovar sesión manualmente (cookie refresh requerida):
+const refreshRes = await fetch(API_BASE + '/api/v2/auth/refresh', {
+  method: 'POST',
+  credentials: 'include',
+});
+const { accessToken: nuevoAccess } = await refreshRes.json();
+sessionStorage.setItem('accessToken', nuevoAccess);
+//
+// 7) Usuario autenticado:
+fetch(API_BASE + '/api/v2/auth/me', {
+  credentials: 'include',
+  headers: { Authorization: 'Bearer ' + sessionStorage.getItem('accessToken') },
+});
+//
+// 8) Cerrar sesión:
+await fetch(API_BASE + '/api/v2/auth/logout', {
+  method: 'POST',
+  credentials: 'include',
+});
+sessionStorage.removeItem('accessToken');
+//
 // Notas
-// - Abrí http://localhost:3000/ → redirige a login. El panel (JSON) es GET /dashboard con Bearer.
-// - Cursos, estudiantes e inscripciones requieren Bearer salvo POST /login.
-// - JWT_SECRET debe ser una cadena larga y aleatoria en producción.
-// - El front estático no tiene package.json: abrí Proyecto/web con Live Server o `npx serve Proyecto/web`.
+// - Access token corto (~15m). Refresh token en cookie httpOnly (~7d) con rotación en servidor.
+// - El front (api.js) renueva el access token automáticamente ante 401.
+// - Cursos, estudiantes e inscripciones requieren Bearer salvo POST /api/v2/auth/login|refresh|logout.
+// - JWT_SECRET y JWT_REFRESH_SECRET deben ser cadenas largas y distintas en producción.
+// - Rate limit en login: 5 intentos por IP cada 15 minutos.

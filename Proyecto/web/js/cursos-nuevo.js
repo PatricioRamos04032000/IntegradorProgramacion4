@@ -1,8 +1,6 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
 
-requireAuth();
-
 function showError(msg) {
   const el = document.getElementById('errorModal');
   document.getElementById('errorModalBody').textContent = msg;
@@ -12,6 +10,8 @@ function showError(msg) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await requireAuth();
+
   try {
     const estados = await api.get('/api/v2/cursos/estados');
     if (!estados) return;

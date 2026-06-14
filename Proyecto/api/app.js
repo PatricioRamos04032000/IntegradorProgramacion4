@@ -17,6 +17,7 @@ import inscripcionesRouter from './routes/inscripciones.routes.js';
 import dashboardRouter from './routes/dashboard.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandlers.js';
 import jwtAuth from './middleware/jwtAuth.js';
+import asyncHandler from './middleware/asyncHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +28,7 @@ const frontOrigin = process.env.FRONT_ORIGIN || 'http://127.0.0.1:5500';
 app.use(
   cors({
     origin: frontOrigin,
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
@@ -45,10 +47,10 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v2/auth', authRouter);
-app.use('/api/v2/cursos', jwtAuth, cursosRouter);
-app.use('/api/v2/estudiantes', jwtAuth, estudiantesRouter);
-app.use('/api/v2/inscripciones', jwtAuth, inscripcionesRouter);
-app.use('/api/v2/dashboard', jwtAuth, dashboardRouter);
+app.use('/api/v2/cursos', asyncHandler(jwtAuth), cursosRouter);
+app.use('/api/v2/estudiantes', asyncHandler(jwtAuth), estudiantesRouter);
+app.use('/api/v2/inscripciones', asyncHandler(jwtAuth), inscripcionesRouter);
+app.use('/api/v2/dashboard', asyncHandler(jwtAuth), dashboardRouter);
 
 app.use(express.static(webRoot));
 

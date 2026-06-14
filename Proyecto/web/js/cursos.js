@@ -1,9 +1,11 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+import {
+  appendPageParams,
+  bindPaginationControls,
+  updatePaginationBar,
+} from './pagination.js';
 
-requireAuth();
-
-const pageSize = 10;
 let offset = 0;
 let estadosCargados = false;
 
@@ -13,8 +15,7 @@ function qs() {
   const p = new URLSearchParams();
   if (nombre) p.set('nombre', nombre);
   if (idCursoEstado) p.set('idCursoEstado', idCursoEstado);
-  p.set('limit', String(pageSize));
-  p.set('offset', String(offset));
+  appendPageParams(p, offset);
   return p.toString();
 }
 
@@ -24,6 +25,14 @@ function showError(msg) {
   const modal = new bootstrap.Modal(el);
   el.addEventListener('hide.bs.modal', () => document.activeElement?.blur(), { once: true });
   modal.show();
+}
+
+function pagElements() {
+  return {
+    pagInfoEl: document.getElementById('pag-info'),
+    btnPrevEl: document.getElementById('btn-prev'),
+    btnNextEl: document.getElementById('btn-next'),
+  };
 }
 
 async function cargarEstados() {
@@ -82,33 +91,29 @@ async function cargar() {
       });
     });
 
-    const total = data.total || 0;
-    const currentPage = Math.floor(offset / pageSize) + 1;
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-    document.getElementById('pag-info').textContent = `P\u00e1gina ${currentPage} de ${totalPages} (${total} resultados)`;
-    document.getElementById('btn-prev').disabled = offset <= 0;
-    document.getElementById('btn-next').disabled = offset + pageSize >= total;
+    updatePaginationBar({
+      ...pagElements(),
+      offset,
+      total: data.total || 0,
+      entityLabel: 'cursos',
+    });
   } catch (e) {
     showError(e.message || 'Error al cargar cursos.');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await requireAuth();
   document.getElementById('filtros').addEventListener('submit', (e) => {
     e.preventDefault();
     offset = 0;
     cargar();
   });
-  document.getElementById('btn-prev').addEventListener('click', () => {
-    if (offset >= pageSize) {
-      offset -= pageSize;
-      cargar();
-    }
-  });
-  document.getElementById('btn-next').addEventListener('click', () => {
-    offset += pageSize;
-    cargar();
+  bindPaginationControls({
+    ...pagElements(),
+    getOffset: () => offset,
+    setOffset: (n) => { offset = n; },
+    onChange: cargar,
   });
   cargar();
 });

@@ -6,7 +6,9 @@ export default class DashboardController {
   }
 
   getDashboard = async (req, res) => {
-    const data = await this.service.getDashboard();
+    const limit = req.query.limit ?? 10;
+    const offset = req.query.offset ?? 0;
+    const data = await this.service.getDashboard({ limit, offset });
     res.json(data);
   };
 }

@@ -1,5 +1,5 @@
 import { API_BASE } from './config.js';
-import { getToken, setToken } from './auth.js';
+import { getAccessToken, setAccessToken, clearSession } from './auth.js';
 
 function showError(msg) {
   const el = document.getElementById('error');
@@ -10,10 +10,10 @@ function showError(msg) {
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   if (params.get('logout') === '1') {
-    sessionStorage.removeItem('token');
+    clearSession();
   }
 
-  if (getToken()) {
+  if (getAccessToken()) {
     window.location.replace('index.html');
     return;
   }
@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch(`${API_BASE}/api/v2/auth/login`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombreUsuario, contrasenia }),
       });
@@ -35,11 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
         showError(data.error || 'Credenciales inválidas.');
         return;
       }
-      if (data.token) {
-        setToken(data.token);
+      if (data.accessToken) {
+        setAccessToken(data.accessToken);
         window.location.href = 'index.html';
       } else {
-        showError('Respuesta del servidor sin token.');
+        showError('Respuesta del servidor sin access token.');
       }
     } catch {
       showError('No se pudo conectar con la API. ¿Está corriendo en ' + API_BASE + '?');

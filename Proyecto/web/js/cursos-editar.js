@@ -1,8 +1,6 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
 
-requireAuth();
-
 function idFromQuery() {
   const id = new URLSearchParams(window.location.search).get('id');
   return id && /^\d+$/.test(id) ? id : null;
@@ -17,6 +15,7 @@ function showError(msg) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await requireAuth();
   const id = idFromQuery();
   if (!id) {
     showError('Falta el parametro id en la URL.');

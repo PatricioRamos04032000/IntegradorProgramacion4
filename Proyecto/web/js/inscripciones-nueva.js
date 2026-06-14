@@ -1,8 +1,6 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
 
-requireAuth();
-
 function showError(msg) {
   const el = document.getElementById('error');
   el.textContent = msg;
@@ -10,6 +8,7 @@ function showError(msg) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await requireAuth();
   try {
     const [cRes, eRes] = await Promise.all([
       api.get('/api/v2/cursos?limit=500&offset=0'),
