@@ -110,6 +110,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     offset = 0;
     cargar();
   });
+  const btnLimpiar = document.getElementById('btn-limpiar');
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', (e) => {
+      e.preventDefault();
+      const form = document.getElementById('filtros');
+      if (form) form.reset();
+      offset = 0;
+      cargar();
+    });
+  }
   bindPaginationControls({
     ...pagElements(),
     getOffset: () => offset,

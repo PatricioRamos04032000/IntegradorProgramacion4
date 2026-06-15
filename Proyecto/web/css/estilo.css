@@ -1,182 +1,409 @@
-/* ─── Paleta de colores ──────────────────────────────────────────────────────
-   Primario:   Azul pizarra oscuro   hsl(222, 47%, 18%)
-   Secundario: Azul pizarra medio    hsl(222, 40%, 24%)
-   Acento:     Índigo suave          hsl(226, 70%, 55%)
-   Hover nav:  Slate con transparencia
-   Fondo:      Gris muy claro        hsl(220, 20%, 97%)
-   Superficie: Blanco puro
-──────────────────────────────────────────────────────────────────────────── */
-
+/* ─── Paleta de colores Moderna ──────────────────────────────────────────── */
 :root {
-  --color-primary:      hsl(222, 47%, 18%);
-  --color-primary-dark: hsl(222, 50%, 13%);
-  --color-primary-hover:hsl(222, 40%, 26%);
-  --color-accent:       hsl(226, 70%, 55%);
-  --color-accent-light: hsl(226, 80%, 95%);
-  --color-bg:           hsl(220, 20%, 97%);
+  /* Fondo exterior de la pantalla (el marco) */
+  --color-bg-exterior:  #e6ebe7; 
+  /* Superficie de la app */
   --color-surface:      #ffffff;
-  --color-text:         hsl(222, 20%, 15%);
-  --color-muted:        hsl(220, 10%, 52%);
-  --color-border:       hsl(220, 15%, 88%);
-  --color-card-cursos:  hsl(226, 60%, 95%);
-  --color-card-est:     hsl(168, 50%, 93%);
-  --color-card-insc:    hsl(190, 60%, 94%);
-  --nav-width:          min(240px, 100%);
+  
+  /* Barra lateral oscura */
+  --color-sidebar:      #1a1c1e;
+  --color-sidebar-hover:#2d3033;
+  
+  /* Acento Verde Lima */
+  --color-accent:       #5268f5;
+  --color-accent-dark:  #284eda; /* Para hovers */
+  
+  /* Textos y bordes */
+  --color-text-main:    #111111;
+  --color-text-muted:   #6b7280;
+  --color-border:       #e5e7eb;
+  
+  /* Radios de borde (Clave para el diseño moderno) */
+  --radius-app:         32px;
+  --radius-card:        24px;
+  --radius-pill:        50px;
+  
+  --nav-width:          260px;
 }
 
 /* ─── Base ─────────────────────────────────────────────────────────────────── */
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background-color: var(--color-bg);
-  color: var(--color-text);
-}
-
-/* ─── Header ────────────────────────────────────────────────────────────────── */
-.fcad-header {
-  background-color: var(--color-primary);
-  color: #fff;
-  border-bottom: 3px solid var(--color-accent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-.fcad-titulo {
+  background-color: var(--color-bg-exterior);
+  color: var(--color-text-main);
+  /* Padding para que la app flote separada de los bordes del navegador */
+  padding: 1.5rem; 
+  min-height: 100vh;
+  box-sizing: border-box;
   margin: 0;
-  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: #fff;
 }
 
-/* ─── Nav toggler (mobile) ──────────────────────────────────────────────────── */
-.fcad-nav-toggler {
-  padding: 0.25rem 0.5rem;
-  background: transparent;
-  border: none;
-}
-
-.fcad-nav-toggler .navbar-toggler-icon {
-  display: inline-block;
-  width: 1.5em;
-  height: 1.5em;
-  vertical-align: middle;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100%;
-}
-
-/* ─── Layout principal ──────────────────────────────────────────────────────── */
+/* ─── Layout principal (El "iPad" flotante) ────────────────────────────────── */
 .fcad-contenedor-principal {
   display: flex;
-  min-height: calc(100vh - 72px);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-app);
+  overflow: hidden; /* Para que la sidebar respete las curvas exteriores */
+  min-height: calc(100vh - 3rem); /* Restamos el padding del body */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Ocultar el Header viejo ───────────────────────────────────────────────── */
+/* Lo ocultamos porque el título principal ahora vive dentro de .fcad-main */
+.fcad-header {
+  display: none !important; 
 }
 
 /* ─── Sidebar nav ───────────────────────────────────────────────────────────── */
 .fcad-nav {
   width: var(--nav-width);
-  background-color: var(--color-primary-dark);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: var(--color-sidebar);
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.fcad-nav ul {
-  margin: 0;
-  padding: 0.5rem 0;
-  list-style: none;
+.fcad-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 2.5rem;
 }
 
-.fcad-nav ul li a {
+.brand-logo {
   display: block;
-  padding: 0.75rem 1.25rem;
-  color: hsl(220, 40%, 80%);
-  text-decoration: none;
-  font-size: 0.925rem;
-  font-weight: 500;
-  border-left: 3px solid transparent;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
-.fcad-nav ul li a:hover,
-.fcad-nav ul li a.active {
-  background-color: var(--color-primary-hover);
-  color: #fff;
-  border-left-color: var(--color-accent);
+.brand-icon {
+  background-color: var(--color-accent);
+  color: var(--color-sidebar);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.brand-text {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Enlaces de Navegación e Iconos SVG ────────────────────────────────────── */
+.nav-links {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem; /* Separación vertical entre botones */
+}
+
+.nav-links li a {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem; /* Separación entre el icono y el texto */
+  padding: 0.75rem 1.2rem;
+  color: #8c9baf;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+
+/* Estilos dinámicos para los iconos SVG */
+.nav-links li a svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.nav-links li a:hover,
+.nav-links li a.active {
+  background-color: var(--color-sidebar-hover);
+  color: #ffffff; /* Esto cambia el color del texto y del SVG simultáneamente */
+}
+
+.nav-links li a:hover svg {
+  transform: translateY(-1px); /* Pequeño salto del icono al pasar el mouse */
+}
+
+/* ─── Botón Salir ───────────────────────────────────────────────────────────── */
+.sidebar-footer {
+  margin-top: 2rem;
+}
+
+.logout-btn {
+  color: #ef4444;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+
+.logout-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.logout-btn:hover svg {
+  transform: translateX(2px); /* El icono de salir se mueve hacia la derecha */
 }
 
 /* ─── Área principal ─────────────────────────────────────────────────────────── */
 .fcad-main {
   flex: 1;
+  padding: 3rem !important; /* Más espacio para respirar */
   background-color: var(--color-surface);
+  overflow-y: auto; /* Para scrollear solo el contenido principal si crece mucho */
 }
 
-/* ─── Tarjetas de resumen del dashboard ─────────────────────────────────────── */
+.main-content-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-copy {
+  min-width: 0;
+}
+
+.header-logo-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.greeting {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.greeting span {
+  color: var(--color-sidebar);
+}
+
+/* ─── Tarjetas de resumen ────────────────────────────────────────────────────── */
+.card {
+  border: none !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s;
+  height: 100%;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.card-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+/* Tarjeta 1: Blanca con borde sutil */
 .bg-cursos-card {
-  background-color: var(--color-card-cursos);
-  color: var(--color-text);
-  border-left: 4px solid var(--color-accent);
+  background-color: #dadde7;
+  border: 1px solid var(--color-border) !important;
+}
+.bg-cursos-card .card-badge {
+  background-color: #f3f4f6;
+  color: var(--color-text-main);
 }
 
+/* Tarjeta 2:  */
 .bg-estudiantes-card {
-  background-color: var(--color-card-est);
-  color: var(--color-text);
-  border-left: 4px solid hsl(168, 55%, 40%);
+  background-color: #dadde7;
+  color: var(--color-sidebar) !important;
+}
+.bg-estudiantes-card .card-badge {
+  background-color: rgb(255, 255, 255);
+  color: var(--color-sidebar);
+}
+.bg-estudiantes-card p {
+  color: var(--color-sidebar) !important;
 }
 
+/* Tarjeta 3: Gris muy claro */
 .bg-inscripciones-card {
-  background-color: var(--color-card-insc);
-  color: var(--color-text);
-  border-left: 4px solid hsl(190, 70%, 40%);
+  background-color: #dadde7;
+  border: 1px solid var(--color-border) !important;
 }
+.bg-inscripciones-card .card-badge {
+  background-color: #ffffff;
+  color: var(--color-text-main);
+}
+
+/* ─── Listado Dinámico (Sobreescribimos list-group de Bootstrap) ─────────────── */
+.modern-list-container {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modern-list-container .list-group-item {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 16px !important;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+  transition: all 0.2s;
+  color: var(--color-text-muted);
+}
+
+.modern-list-container .list-group-item:hover {
+  background-color: var(--color-bg-exterior);
+  border-color: #d1d5db !important;
+  color: var(--color-text-main);
+}
+
+
+/* ─── Tarjetas de Curso en el Listado Dinámico ─────────────────────────────── */
+/* Mejora para las tarjetas de cursos en el index */
+.modern-course-card {
+  background-color: #e8ebf3;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 2px 18px rgba(0, 0, 0, 0.01);
+  border-radius: 20px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.modern-course-card .card-body {
+  padding-bottom: 0.5rem !important;
+}
+
+/* Estilo para el icono del curso */
+.course-icon {
+  background-color: #f0fdf4; /* Verde muy suave */
+  color: #1f0da3; /* Verde lima */
+  padding: 8px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+/* Botón "Ver detalle" más elegante */
+.btn-modern-outline {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  color: #374151;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-modern-outline:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
 
 /* ─── Paginación ─────────────────────────────────────────────────────────────── */
 .fcad-paginacion {
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-top: 0.75rem;
   border-top: 1px solid var(--color-border);
-  margin-top: 0.5rem;
+  padding-top: 1.5rem;
+  margin-top: 1rem;
 }
 
-/* ─── Logout link ────────────────────────────────────────────────────────────── */
-.fcad-header a.text-white {
-  opacity: 0.75;
+.btn-modern-outline {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-main);
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius-pill);
   font-size: 0.875rem;
-  transition: opacity 0.15s;
-}
-.fcad-header a.text-white:hover {
-  opacity: 1;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-/* ─── Greeting ───────────────────────────────────────────────────────────────── */
-.greeting {
-  font-weight: 600;
-  color: var(--color-accent);
-}
-
-/* ─── Responsive: desktop ─────────────────────────────────────────────────── */
-@media (min-width: 992px) {
-  .fcad-nav-toggler {
-    display: none !important;
-  }
-
-  .fcad-nav.collapse {
-    display: block !important;
-    visibility: visible;
-    height: auto !important;
-  }
+.btn-modern-outline:hover {
+  background-color: var(--color-sidebar);
+  color: #ffffff;
+  border-color: var(--color-sidebar);
 }
 
 /* ─── Responsive: tablet / mobile ────────────────────────────────────────── */
 @media (max-width: 991.98px) {
+  body {
+    padding: 0.5rem; /* Menos margen exterior en dispositivos pequeños */
+  }
+  
   .fcad-contenedor-principal {
     flex-direction: column;
+    min-height: calc(100vh - 1rem);
+    border-radius: 24px; /* Un poco menos de curva general en móviles */
   }
 
   .fcad-nav {
     width: 100%;
+    padding: 1.5rem 1rem;
+  }
+  
+  .nav-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .nav-links li a {
+    padding: 0.6rem 1rem;
+  }
+  
+  .logout-btn {
+    justify-content: center;
+    margin-top: 1rem;
   }
 
   .fcad-main {
-    padding: 1rem !important;
+    padding: 1.5rem !important;
   }
 }
 
@@ -184,6 +411,7 @@ body {
   .fcad-paginacion {
     flex-direction: column;
     align-items: stretch !important;
+    gap: 1rem;
   }
 
   .fcad-paginacion-btns {
@@ -194,14 +422,225 @@ body {
   .fcad-paginacion-btns .btn {
     flex: 1;
   }
+}
 
-  .fcad-tabla-acciones {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
 
-  .fcad-tabla-acciones .btn {
-    width: 100%;
-  }
+/* ─── Elementos de Interfaz (Inscripciones, Cursos, Estudiantes) ─────────────── */
+
+/* Botón de Acción Principal */
+.btn-modern-primary {
+  background-color: var(--color-sidebar);
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modern-primary:hover {
+  background-color: var(--color-accent);
+  color: var(--color-sidebar);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(216, 245, 82, 0.3); /* Resplandor color lima */
+}
+
+/* Buscador Estilo Píldora */
+.modern-search-form {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 0.35rem;
+  max-width: 480px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modern-search-form:focus-within {
+  border-color: var(--color-sidebar);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.search-icon {
+  padding: 0 0.5rem 0 1rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.modern-search-input {
+  border: none;
+  background: transparent;
+  flex: 1;
+  padding: 0.5rem;
+  outline: none;
+  color: var(--color-text-main);
+  font-size: 0.95rem;
+  min-width: 0; /* Evita que el input rompa el flex en móviles */
+}
+
+.modern-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.btn-modern-secondary {
+  background-color: var(--color-bg-exterior);
+  color: var(--color-text-main);
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.btn-modern-secondary:hover {
+  background-color: #d1d5db;
+}
+
+/* Contenedor de la Tabla */
+.modern-table-container {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  overflow: hidden; /* Esto asegura que el radio de borde redondee la tabla por dentro */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+}
+
+/* Rediseño de la Tabla */
+.modern-table {
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.modern-table th {
+  background-color: #f8fafc; /* Gris ultra claro para diferenciar la cabecera */
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  border-top: none;
+}
+
+.modern-table td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  font-size: 0.95rem;
+}
+
+/* Quitar el borde a la última fila para que no choque con el contenedor */
+.modern-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Efecto hover limpio en las filas */
+.modern-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.modern-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Ajustes adicionales para que los botones inyectados por JS se vean bien */
+.modern-table .btn {
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  padding: 0.35rem 0.85rem;
+}
+
+
+/* ─── Tarjeta de Detalle y Modales ────────────────────────────────────────── */
+
+/* Tarjeta contenedora de datos de constancia */
+.modern-detail-card {
+  background-color: #ffffff;
+  border-radius: var(--radius-app) !important; /* Curva bien pronunciada */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+/* Modificadores para el Modal de Bootstrap */
+.modern-modal {
+  border: none;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.modern-modal .btn-close {
+  background-size: 0.8em; /* Hace la cruz un poco más fina */
+}
+
+.modern-modal .modal-body {
+  font-size: 0.95rem;
+}
+
+/* ─── Elementos de Formulario Modernos ───────────────────────────────────── */
+
+.modern-input {
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  color: var(--color-text-main);
+  background-color: var(--color-bg-exterior);
+}
+
+.modern-input:focus {
+  border-color: var(--color-sidebar);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  outline: none;
+  background-color: #ffffff;
+}
+
+/* Ajustes internos para la tarjeta del estudiante (Lima) */
+.bg-estudiantes-card .text-dark {
+  color: var(--color-sidebar) !important;
+}
+
+
+/* ─── Fichas de Detalle (Listas de Definición) ───────────────────────────── */
+
+.modern-dl dt {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  padding-top: 1rem; /* Da aire entre cada fila de datos */
+}
+
+.modern-dl dd {
+  color: var(--color-text-main);
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--color-border);
+  
+}
+
+/* Evitamos el borde en el último elemento para que quede prolijo con los botones */
+.modern-dl dd:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
