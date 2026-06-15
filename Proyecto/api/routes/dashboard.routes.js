@@ -58,6 +58,10 @@ const dashboardController = new DashboardController();
  *                     total: { type: integer }
  *                     limit: { type: integer }
  *                     offset: { type: integer }
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  */
 
 router.get('/', dashboardQueryValidation, asyncHandler(dashboardController.getDashboard));

@@ -1,5 +1,6 @@
 import createError from 'http-errors';
 import PDFDocument from 'pdfkit';
+import { CERTIFICADO_PDF_ERROR } from '../constants/apiMessages.js';
 import { formatearFechaInscripcion } from '../utils/certificado.util.js';
 
 export function pipeCertificadoInscripcionPdf(inscripcion, res) {
@@ -15,7 +16,7 @@ export function pipeCertificadoInscripcionPdf(inscripcion, res) {
 
     const onError = (err) => {
       if (!res.headersSent) {
-        reject(createError(500, 'No se pudo generar el certificado PDF.'));
+        reject(createError(500, CERTIFICADO_PDF_ERROR));
         return;
       }
       console.error('Error al generar certificado PDF después de enviar headers:', err);

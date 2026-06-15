@@ -36,7 +36,7 @@ const estudiantesController = new EstudiantesController();
  *         schema: { type: string }
  *       - in: query
  *         name: limit
- *         schema: { type: integer, minimum: 0, default: 10 }
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
  *       - in: query
  *         name: offset
  *         schema: { type: integer, minimum: 0, default: 0 }
@@ -51,6 +51,14 @@ const estudiantesController = new EstudiantesController();
  *     responses:
  *       200:
  *         description: Lista paginada de estudiantes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedEstudianteResponse'
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *   post:
  *     tags: [Estudiantes]
  *     summary: Alta de estudiante
@@ -72,6 +80,18 @@ const estudiantesController = new EstudiantesController();
  *     responses:
  *       201:
  *         description: Estudiante creado
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       409:
+ *         description: Documento duplicado entre estudiantes activos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Ya existe un estudiante activo con ese documento.
  */
 
 /**
@@ -90,8 +110,18 @@ const estudiantesController = new EstudiantesController();
  *     responses:
  *       200:
  *         description: Estudiante encontrado
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
- *         description: Estudiante no encontrado
+ *         description: Estudiante no encontrado o inactivo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Estudiante no encontrado o inactivo.
  *   put:
  *     tags: [Estudiantes]
  *     summary: Edición de estudiante
@@ -118,8 +148,26 @@ const estudiantesController = new EstudiantesController();
  *     responses:
  *       200:
  *         description: Estudiante actualizado
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Estudiante no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Estudiante no encontrado.
+ *       409:
+ *         description: Documento duplicado entre estudiantes activos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Ya existe un estudiante activo con ese documento.
  *   delete:
  *     tags: [Estudiantes]
  *     summary: Baja lógica de estudiante
@@ -133,8 +181,26 @@ const estudiantesController = new EstudiantesController();
  *     responses:
  *       204:
  *         description: Estudiante eliminado (soft delete)
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Estudiante no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Estudiante no encontrado.
+ *       409:
+ *         description: Estudiante con inscripciones activas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "No se puede eliminar el estudiante: tiene 2 inscripción(es) activa(s)."
  */
 
 router.get('/', [estudiantesFindAllValidation, estudiantesFindAllTransform], asyncHandler(estudiantesController.browse));

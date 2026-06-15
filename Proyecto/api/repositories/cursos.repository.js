@@ -154,6 +154,9 @@ export default class CursosRepository {
              id_usuario_modificacion = $7,
              fecha_hora_modificacion = NOW()
        WHERE id_curso = $8
+         AND id_curso_estado IN (
+           SELECT id_curso_estado FROM cursos_estados WHERE es_activo = 1
+         )
       `,
       [
         data.nombre,
@@ -177,6 +180,9 @@ export default class CursosRepository {
              id_usuario_modificacion = $2,
              fecha_hora_modificacion = NOW()
        WHERE id_curso = $3
+         AND id_curso_estado IN (
+           SELECT id_curso_estado FROM cursos_estados WHERE es_activo = 1
+         )
       `,
       [ESTADO_ELIMINADO, Number(usuarioId), Number(id)],
     );

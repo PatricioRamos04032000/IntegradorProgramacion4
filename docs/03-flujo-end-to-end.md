@@ -414,12 +414,21 @@ sequenceDiagram
 
 | HTTP | Cuándo | Mensaje típico | Capa que lo genera |
 |------|--------|----------------|-------------------|
-| 401 | Sin token, token expirado o usuario inactivo | `No autorizado: token ausente...` | `jwtAuth` |
-| 400 | Body inválido (campo faltante, tipo incorrecto) | `{ errors: [...] }` | Validators |
-| 404 | Curso id inexistente o estado eliminado en listados | `Curso no encontrado` | Service |
-| 409 | `inscriptosMax` menor que inscriptos activos | `No se puede reducir el cupo...` | Service |
-| 422 | `idCursoEstado` no existe o no está activo | `El estado del curso no es válido` | Service |
-| 429 | Demasiados intentos de login | Rate limit | `loginRateLimit` |
+| 401 | Sin token, token expirado o usuario inactivo | `No autorizado: token ausente o mal formado.` | `jwtAuth` |
+| 401 | Login con credenciales incorrectas | `Credenciales inválidas.` | `auth.service` |
+| 400 | Body o query inválido | `{ errors: [...] }` | Validators |
+| 404 | Recurso inexistente (GET/PUT/DELETE por id) | `Curso no encontrado.` / `Estudiante no encontrado.` | Service |
+| 409 | PUT curso: cupo menor que inscriptos activos | `No se puede reducir el cupo...` | `cursos.service` |
+| 409 | DELETE curso con inscriptos activos | `No se puede eliminar el curso...` | `cursos.service` |
+| 409 | POST inscripción: cupo lleno o duplicado | `El curso ha alcanzado el cupo máximo...` / `El estudiante ya se encuentra inscripto...` | `inscripcion.service` |
+| 409 | DELETE estudiante con inscripciones activas | `No se puede eliminar el estudiante...` | `estudiante.service` |
+| 422 | Estado de curso inválido al crear/editar | `El estado del curso no es válido.` | `cursos.service` |
+| 422 | POST inscripción: curso no abierto o estudiante inactivo | `Solo se puede inscribir en cursos con inscripción abierta.` | `inscripcion.service` |
+| 429 | Demasiados intentos de login | `Demasiados intentos de login. Intente más tarde.` | `loginRateLimit` |
+
+**Demo rápida — inscripción con cupo lleno:** intentar `POST /api/v2/inscripciones` con un curso que ya tiene `inscriptosActuales >= inscriptosMax` → respuesta **409** con `{ error: "El curso ha alcanzado el cupo máximo de inscriptos." }`.
+
+Mensajes centralizados en `Proyecto/api/constants/apiMessages.js`. Contrato documentado en Swagger (`/docs`).
 
 ---
 

@@ -1,82 +1,22 @@
-import 'dotenv/config';
-
+import swaggerJsdoc from 'swagger-jsdoc';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import logger from 'morgan';
-import helmet from 'helmet';
-import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
 
-import authRouter from './routes/auth.routes.js';
-import cursosRouter from './routes/cursos.routes.js';
-import estudiantesRouter from './routes/estudiantes.routes.js';
-import inscripcionesRouter from './routes/inscripciones.routes.js';
-import dashboardRouter from './routes/dashboard.routes.js';
-import { notFoundHandler, errorHandler } from './middleware/errorHandlers.js';
-import jwtAuth from './middleware/jwtAuth.js';
-import asyncHandler from './middleware/asyncHandler.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const app = express();
-
-const frontOrigin = process.env.FRONT_ORIGIN || 'http://127.0.0.1:5500';
-app.use(
-  cors({
-    origin: frontOrigin,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }),
-);
-
-app.use(helmet());
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-
-const webRoot = path.join(__dirname, '..', 'web');
-
-app.get('/', (req, res) => {
-  res.redirect(302, '/login.html');
-});
-
-app.use('/api/v2/auth', authRouter);
-app.use('/api/v2/cursos', asyncHandler(jwtAuth), cursosRouter);
-app.use('/api/v2/estudiantes', asyncHandler(jwtAuth), estudiantesRouter);
-app.use('/api/v2/inscripciones', asyncHandler(jwtAuth), inscripcionesRouter);
-app.use('/api/v2/dashboard', asyncHandler(jwtAuth), dashboardRouter);
-
-app.use(express.static(webRoot));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const apiRoot = path.join(__dirname, '..');
 
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
-    info: {
-      title: 'Proyecto Integrador - API',
-      version: '2.0.0',
-      description: 'API REST v2 con capas: validators, DTOs, services, repositories',
-    },
-    servers: [{ url: `http://localhost:${process.env.PORT || 3000}` }],
+    info: { title: 'Test', version: '1.0.0' },
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
+        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       },
       schemas: {
         ErrorResponse: {
           type: 'object',
-          properties: {
-            error: { type: 'string' },
-          },
+          properties: { error: { type: 'string' } },
           required: ['error'],
         },
         ValidationErrorItem: {
@@ -103,16 +43,8 @@ const swaggerOptions = {
           properties: {
             idCurso: { type: 'integer' },
             nombre: { type: 'string' },
-            descripcion: { type: 'string' },
-            fechaInicio: { type: 'string', format: 'date' },
-            cantidadHoras: { type: 'integer' },
-            inscriptosMax: { type: 'integer' },
-            idCursoEstado: { type: 'integer' },
-            estado: { type: 'string' },
             inscriptosActuales: { type: 'integer' },
             plazasDisponibles: { type: 'integer' },
-            idUsuarioModificacion: { type: 'integer' },
-            fechaHoraModificacion: { type: 'string', format: 'date-time' },
           },
         },
         PaginatedCursoResponse: {
@@ -193,7 +125,6 @@ const swaggerOptions = {
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' },
-              example: { error: 'No autorizado: token ausente o mal formado.' },
             },
           },
         },
@@ -206,7 +137,7 @@ const swaggerOptions = {
           },
         },
         Conflict: {
-          description: 'Conflicto de estado (cupo, duplicado, dependencias)',
+          description: 'Conflicto',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' },
@@ -214,7 +145,7 @@ const swaggerOptions = {
           },
         },
         UnprocessableEntity: {
-          description: 'Entidad no elegible para la operación',
+          description: 'No elegible',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' },
@@ -222,16 +153,15 @@ const swaggerOptions = {
           },
         },
         TooManyRequests: {
-          description: 'Demasiados intentos',
+          description: 'Rate limit',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' },
-              example: { error: 'Demasiados intentos de login. Intente más tarde.' },
             },
           },
         },
         InternalError: {
-          description: 'Error interno del servidor',
+          description: 'Error interno',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' },
@@ -241,13 +171,15 @@ const swaggerOptions = {
       },
     },
   },
-  apis: [path.join(__dirname, 'routes', '*.routes.js')],
+  apis: [path.join(apiRoot, 'routes', '*.routes.js')],
 };
 
-const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-app.use(notFoundHandler);
-app.use(errorHandler);
-
-export default app;
+const doc = swaggerJsdoc(swaggerOptions);
+const paths = Object.keys(doc.paths || {});
+console.log(`Swagger OK: ${paths.length} paths`);
+for (const p of paths.sort()) {
+  for (const method of Object.keys(doc.paths[p])) {
+    const codes = Object.keys(doc.paths[p][method].responses || {}).sort();
+    console.log(`${method.toUpperCase()} ${p} -> ${codes.join(', ')}`);
+  }
+}

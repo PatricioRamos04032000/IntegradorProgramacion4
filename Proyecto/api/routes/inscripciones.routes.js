@@ -25,13 +25,21 @@ const inscripcionesController = new InscripcionesController();
  *         description: Búsqueda por documento, curso o apellido
  *       - in: query
  *         name: limit
- *         schema: { type: integer, minimum: 0, default: 10 }
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
  *       - in: query
  *         name: offset
  *         schema: { type: integer, minimum: 0, default: 0 }
  *     responses:
  *       200:
- *         description: Lista paginada de inscripciones
+ *         description: Lista paginada de inscripciones activas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedInscripcionResponse'
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *   post:
  *     tags: [Inscripciones]
  *     summary: Alta de inscripción
@@ -51,7 +59,37 @@ const inscripcionesController = new InscripcionesController();
  *       201:
  *         description: Inscripción creada
  *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       409:
  *         description: Cupo agotado o inscripción duplicada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               cupoAgotado:
+ *                 summary: Cupo máximo alcanzado
+ *                 value:
+ *                   error: El curso ha alcanzado el cupo máximo de inscriptos.
+ *               duplicada:
+ *                 summary: Inscripción duplicada
+ *                 value:
+ *                   error: El estudiante ya se encuentra inscripto en este curso.
+ *       422:
+ *         description: Estudiante o curso no elegible para inscribir
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               estudianteInactivo:
+ *                 value:
+ *                   error: El estudiante está inactivo; no se puede inscribir.
+ *               cursoNoAbierto:
+ *                 value:
+ *                   error: Solo se puede inscribir en cursos con inscripción abierta.
  */
 
 /**
@@ -84,54 +122,27 @@ const inscripcionesController = new InscripcionesController();
  *               type: string
  *               format: binary
  *       400:
- *         description: Parámetros inválidos
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 errors:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       msg: { type: string }
+ *         $ref: '#/components/responses/BadRequestValidation'
  *       401:
- *         description: Token ausente, inválido o expirado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error: { type: string }
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Inscripción no encontrada
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Inscripción no encontrada.
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Inscripción no encontrada.
  *       422:
  *         description: Inscripción, estudiante o curso no elegible para certificado
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: La inscripción está cancelada; no se puede emitir certificado.
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: La inscripción está cancelada; no se puede emitir certificado.
  *       500:
- *         description: Error interno al generar el PDF
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error: { type: string }
+ *         $ref: '#/components/responses/InternalError'
  */
 
 /**
@@ -150,8 +161,18 @@ const inscripcionesController = new InscripcionesController();
  *     responses:
  *       200:
  *         description: Inscripción encontrada
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Inscripción no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Inscripción no encontrada.
  *   delete:
  *     tags: [Inscripciones]
  *     summary: Cancelación lógica de inscripción
@@ -165,8 +186,18 @@ const inscripcionesController = new InscripcionesController();
  *     responses:
  *       204:
  *         description: Inscripción cancelada
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Inscripción no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Inscripción no encontrada.
  */
 
 router.get('/', [inscripcionesFindAllValidation, inscripcionesFindAllTransform], asyncHandler(inscripcionesController.browse));

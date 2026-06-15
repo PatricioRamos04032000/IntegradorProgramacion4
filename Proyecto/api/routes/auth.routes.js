@@ -13,7 +13,7 @@ const authController = new AuthController();
  * /api/v2/auth/login:
  *   post:
  *     tags: [Auth]
- *     summary: Iniciar sesion y obtener access token
+ *     summary: Iniciar sesión y obtener access token
  *     requestBody:
  *       required: true
  *       content:
@@ -40,10 +40,18 @@ const authController = new AuthController();
  *                     nombre_usuario: { type: string }
  *                     nombre: { type: string }
  *                     apellido: { type: string }
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
  *       401:
- *         description: Credenciales invalidas
+ *         description: Credenciales inválidas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Credenciales inválidas.
  *       429:
- *         description: Demasiados intentos de login
+ *         $ref: '#/components/responses/TooManyRequests'
  */
 
 /**
@@ -69,7 +77,11 @@ const authController = new AuthController();
  *                     nombre: { type: string }
  *                     apellido: { type: string }
  *       401:
- *         description: Refresh token invalido o ausente
+ *         description: Refresh token inválido, ausente o expirado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 
 /**
@@ -77,10 +89,10 @@ const authController = new AuthController();
  * /api/v2/auth/logout:
  *   post:
  *     tags: [Auth]
- *     summary: Cerrar sesion y revocar refresh token
+ *     summary: Cerrar sesión y revocar refresh token
  *     responses:
  *       204:
- *         description: Sesion cerrada
+ *         description: Sesión cerrada
  */
 
 /**
@@ -104,7 +116,7 @@ const authController = new AuthController();
  *                 nombre: { type: string }
  *                 apellido: { type: string }
  *       401:
- *         description: No autorizado
+ *         $ref: '#/components/responses/Unauthorized'
  */
 
 router.post('/login', loginRateLimit, authLoginValidation, asyncHandler(authController.login));

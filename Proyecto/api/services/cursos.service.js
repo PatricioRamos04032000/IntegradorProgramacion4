@@ -5,6 +5,12 @@ import CursoEstadoResponseDTO from '../dtos/cursoEstado.response.dto.js';
 import InscripcionCursoResponseDTO from '../dtos/inscripcionCurso.response.dto.js';
 import BaseService from './base.service.js';
 import createError from 'http-errors';
+import {
+  CURSO_ESTADO_INVALIDO,
+  CURSO_NO_ENCONTRADO,
+  cursoCupoReducido,
+  cursoTieneInscriptosActivos,
+} from '../constants/apiMessages.js';
 
 export default class CursosService extends BaseService {
   static KEYS_MAP = {
@@ -37,7 +43,7 @@ export default class CursosService extends BaseService {
   async getById(id) {
     const curso = await this.repository.getById(id);
     if (!curso) {
-      throw createError(404, 'Curso no encontrado');
+      throw createError(404, CURSO_NO_ENCONTRADO);
     }
     return new CursoResponseDTO(curso);
   }
@@ -45,7 +51,7 @@ export default class CursosService extends BaseService {
   async getInscriptos(id) {
     const curso = await this.repository.getById(id);
     if (!curso) {
-      throw createError(404, 'Curso no encontrado');
+      throw createError(404, CURSO_NO_ENCONTRADO);
     }
     const rows = await this.inscripcionRepository.getActivasByCurso(id);
     return rows.map((row) => new InscripcionCursoResponseDTO(row));
@@ -59,7 +65,7 @@ export default class CursosService extends BaseService {
   async assertEstadoValido(idCursoEstado) {
     const existe = await this.repository.existeEstadoActivo(idCursoEstado);
     if (!existe) {
-      throw createError(422, 'El estado del curso no es válido.');
+      throw createError(422, CURSO_ESTADO_INVALIDO);
     }
   }
 
@@ -79,14 +85,12 @@ export default class CursosService extends BaseService {
   }
 
   async update(id, data, idUsuario) {
+    await this.getById(id);
     await this.assertEstadoValido(data.idCursoEstado);
 
     const inscriptosActuales = await this.repository.contarInscriptosActivos(id);
     if (data.inscriptosMax < inscriptosActuales) {
-      throw createError(
-        409,
-        `No se puede reducir el cupo por debajo de los inscriptos actuales (${inscriptosActuales}).`,
-      );
+      throw createError(409, cursoCupoReducido(inscriptosActuales));
     }
 
     const dbData = {
@@ -99,23 +103,22 @@ export default class CursosService extends BaseService {
     };
     const rowCount = await this.repository.update(id, dbData, idUsuario);
     if (rowCount === 0) {
-      throw createError(404, 'Curso no encontrado');
+      throw createError(404, CURSO_NO_ENCONTRADO);
     }
     return this.getById(id);
   }
 
   async remove(id, idUsuario) {
+    await this.getById(id);
+
     const inscriptosActuales = await this.repository.contarInscriptosActivos(id);
     if (inscriptosActuales > 0) {
-      throw createError(
-        409,
-        `No se puede eliminar el curso: tiene ${inscriptosActuales} inscripto(s) activo(s).`,
-      );
+      throw createError(409, cursoTieneInscriptosActivos(inscriptosActuales));
     }
 
     const rowCount = await this.repository.delete(id, idUsuario);
     if (rowCount === 0) {
-      throw createError(404, 'Curso no encontrado');
+      throw createError(404, CURSO_NO_ENCONTRADO);
     }
     return rowCount;
   }
