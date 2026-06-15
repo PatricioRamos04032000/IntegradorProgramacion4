@@ -1,5 +1,6 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+import { escapeHtml } from './dom.js';
 import { descargarCertificado } from './certificado.js';
 
 function idFromQuery() {
@@ -37,10 +38,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       : '—';
     document.getElementById('contenido').innerHTML = `
       <p class="text-center text-muted small mb-2">Universidad Nacional de Entre Ríos — FCAD</p>
-      <p class="mb-2">Se certifica que el/la estudiante <strong>${ins.apellido}, ${ins.nombres}</strong>
-      (documento <strong>${ins.documento}</strong>) se encuentra inscripto/a en el curso:</p>
-      <p class="fs-5 text-primary text-center">${ins.cursoNombre}</p>
-      <p class="text-end small text-muted mb-0">Fecha de inscripción: ${fecha}</p>`;
+      <p class="mb-2">Se certifica que el/la estudiante <strong>${escapeHtml(ins.apellido)}, ${escapeHtml(ins.nombres)}</strong>
+      (documento <strong>${escapeHtml(ins.documento)}</strong>) se encuentra inscripto/a en el curso:</p>
+      <p class="fs-5 text-primary text-center">${escapeHtml(ins.cursoNombre)}</p>
+      <p class="text-end small text-muted mb-0">Fecha de inscripción: ${escapeHtml(fecha)}</p>`;
   } catch (e) {
     showPageError(e.message || 'No se pudo cargar la inscripción.');
     return;

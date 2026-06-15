@@ -1,5 +1,6 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+import { escapeHtml } from './dom.js';
 import { descargarCertificado } from './certificado.js';
 
 function idFromQuery() {
@@ -16,7 +17,7 @@ function showError(msg) {
 }
 
 function row(dt, dd) {
-  return `<dt class="col-sm-3">${dt}</dt><dd class="col-sm-9">${dd}</dd>`;
+  return `<dt class="col-sm-3">${escapeHtml(dt)}</dt><dd class="col-sm-9">${escapeHtml(dd)}</dd>`;
 }
 
 async function cargarInscriptos(id) {
@@ -38,12 +39,12 @@ async function cargarInscriptos(id) {
         : '\u2014';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${i.apellido}</td>
-        <td>${i.nombres}</td>
-        <td>${i.documento}</td>
-        <td>${fecha}</td>
+        <td>${escapeHtml(i.apellido)}</td>
+        <td>${escapeHtml(i.nombres)}</td>
+        <td>${escapeHtml(i.documento)}</td>
+        <td>${escapeHtml(fecha)}</td>
         <td class="fcad-tabla-acciones">
-          <button type="button" class="btn btn-sm btn-success btn-certificado" data-id="${i.idInscripcion}">Descargar diploma</button>
+          <button type="button" class="btn btn-sm btn-success btn-certificado" data-id="${escapeHtml(i.idInscripcion)}">Descargar diploma</button>
         </td>`;
       tbody.appendChild(tr);
     });

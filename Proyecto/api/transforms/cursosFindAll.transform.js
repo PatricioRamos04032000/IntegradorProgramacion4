@@ -1,6 +1,8 @@
+import { normalizeLimit, normalizeOffset } from '../utils/pagination.js';
+
 const cursosFindAllTransform = (req, res, next) => {
-  req.limit = req.query.limit ? Number(req.query.limit) : 0;
-  req.offset = req.query.offset ? Number(req.query.offset) : 0;
+  req.limit = normalizeLimit(req.query.limit);
+  req.offset = normalizeOffset(req.query.offset);
 
   const filterObj = {};
   const orderObj = { idCurso: 'ASC' };

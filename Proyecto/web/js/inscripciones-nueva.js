@@ -11,15 +11,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   await requireAuth();
   try {
     const [cRes, eRes] = await Promise.all([
-      api.get('/api/v2/cursos?limit=500&offset=0'),
-      api.get('/api/v2/estudiantes?limit=500&offset=0'),
+      api.get('/api/v2/cursos?limit=100&offset=0'),
+      api.get('/api/v2/estudiantes?limit=100&offset=0'),
     ]);
     if (!cRes || !eRes) return;
-    const cursos = cRes.items || [];
+    // Solo cursos con INSCRIPCIÓN ABIERTA (estado 2): no se puede inscribir en otros.
+    const cursos = (cRes.items || []).filter((c) => c.idCursoEstado === 2);
     const selC = document.getElementById('id_curso');
     selC.innerHTML = '<option value="">-- Seleccione un curso --</option>';
+    if (cursos.length === 0) {
+      selC.innerHTML = '<option value="">-- No hay cursos con inscripción abierta --</option>';
+    }
     cursos.forEach((c) => {
-      selC.appendChild(new Option(`${c.nombre} (#${c.idCurso})`, String(c.idCurso)));
+      const disp = c.plazasDisponibles != null ? c.plazasDisponibles : null;
+      const sufijo = disp === 0 ? ' — SIN CUPO' : '';
+      selC.appendChild(new Option(`${c.nombre} (#${c.idCurso})${sufijo}`, String(c.idCurso)));
     });
 
     const estudiantes = eRes.items || [];
@@ -32,6 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     const infoCard = document.getElementById('curso-info');
+    const warningEl = document.getElementById('curso-warning');
+    const btnSubmit = document.getElementById('btn-submit');
+
+    const setSubmitEnabled = (enabled) => {
+      btnSubmit.disabled = !enabled;
+    };
+
     selC.addEventListener('change', () => {
       const selectedId = Number(selC.value);
       const c = cursos.find((item) => item.idCurso === selectedId);
@@ -40,7 +53,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const fi = c.fechaInicio ? new Date(c.fechaInicio).toLocaleDateString('es-AR') : '\u2014';
         document.getElementById('curso-info-inicio').textContent = fi;
         document.getElementById('curso-info-horas').textContent = `${c.cantidadHoras} hs`;
-        document.getElementById('curso-info-cupo').textContent = c.inscriptosMax;
+
+        const actuales = c.inscriptosActuales != null ? c.inscriptosActuales : '?';
+        const disp = c.plazasDisponibles != null ? c.plazasDisponibles : null;
+        document.getElementById('curso-info-cupo').textContent =
+          disp != null
+            ? `${actuales} / ${c.inscriptosMax} (${disp} disponibles)`
+            : `${actuales} / ${c.inscriptosMax}`;
 
         const estadoEl = document.getElementById('curso-info-estado');
         estadoEl.textContent = c.estado || '\u2014';
@@ -57,8 +76,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.getElementById('curso-info-descripcion').textContent = c.descripcion || 'Sin descripción.';
         infoCard.classList.remove('d-none');
+
+        const sinCupo = disp != null && disp <= 0;
+        if (sinCupo) {
+          warningEl.textContent = 'El curso alcanzó su cupo máximo. No se admiten más inscripciones.';
+          warningEl.classList.remove('d-none');
+        } else {
+          warningEl.classList.add('d-none');
+        }
+        setSubmitEnabled(!sinCupo);
       } else {
         infoCard.classList.add('d-none');
+        warningEl.classList.add('d-none');
+        setSubmitEnabled(true);
       }
     });
 

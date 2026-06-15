@@ -1,6 +1,8 @@
+import { normalizeLimit, normalizeOffset } from '../utils/pagination.js';
+
 const inscripcionesFindAllTransform = (req, res, next) => {
-  req.limit = req.query.limit ? Number(req.query.limit) : 10;
-  req.offset = req.query.offset ? Number(req.query.offset) : 0;
+  req.limit = normalizeLimit(req.query.limit);
+  req.offset = normalizeOffset(req.query.offset);
   req.filter = req.query.q ? { q: req.query.q } : {};
   next();
 };

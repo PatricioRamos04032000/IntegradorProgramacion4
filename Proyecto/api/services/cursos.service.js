@@ -56,7 +56,16 @@ export default class CursosService extends BaseService {
     return estados.map((e) => new CursoEstadoResponseDTO(e));
   }
 
+  async assertEstadoValido(idCursoEstado) {
+    const existe = await this.repository.existeEstadoActivo(idCursoEstado);
+    if (!existe) {
+      throw createError(422, 'El estado del curso no es válido.');
+    }
+  }
+
   async create(data, idUsuario) {
+    await this.assertEstadoValido(data.idCursoEstado);
+
     const dbData = {
       nombre: data.nombre.trim(),
       descripcion: data.descripcion.trim(),
@@ -70,6 +79,16 @@ export default class CursosService extends BaseService {
   }
 
   async update(id, data, idUsuario) {
+    await this.assertEstadoValido(data.idCursoEstado);
+
+    const inscriptosActuales = await this.repository.contarInscriptosActivos(id);
+    if (data.inscriptosMax < inscriptosActuales) {
+      throw createError(
+        409,
+        `No se puede reducir el cupo por debajo de los inscriptos actuales (${inscriptosActuales}).`,
+      );
+    }
+
     const dbData = {
       nombre: data.nombre.trim(),
       descripcion: data.descripcion.trim(),
@@ -86,6 +105,14 @@ export default class CursosService extends BaseService {
   }
 
   async remove(id, idUsuario) {
+    const inscriptosActuales = await this.repository.contarInscriptosActivos(id);
+    if (inscriptosActuales > 0) {
+      throw createError(
+        409,
+        `No se puede eliminar el curso: tiene ${inscriptosActuales} inscripto(s) activo(s).`,
+      );
+    }
+
     const rowCount = await this.repository.delete(id, idUsuario);
     if (rowCount === 0) {
       throw createError(404, 'Curso no encontrado');

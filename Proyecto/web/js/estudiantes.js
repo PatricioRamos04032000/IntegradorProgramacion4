@@ -1,5 +1,6 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+import { escapeHtml } from './dom.js';
 import {
   appendPageParams,
   bindPaginationControls,
@@ -50,14 +51,14 @@ async function cargar() {
     (data.items || []).forEach((s) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${s.documento}</td>
-        <td>${s.apellido}</td>
-        <td>${s.nombres}</td>
-        <td>${s.email}</td>
+        <td>${escapeHtml(s.documento)}</td>
+        <td>${escapeHtml(s.apellido)}</td>
+        <td>${escapeHtml(s.nombres)}</td>
+        <td>${escapeHtml(s.email)}</td>
         <td class="fcad-tabla-acciones">
-          <a class="btn btn-sm btn-outline-primary" href="estudiantes-detalle.html?id=${s.idEstudiante}">Ver</a>
-          <a class="btn btn-sm btn-outline-secondary" href="estudiantes-editar.html?id=${s.idEstudiante}">Editar</a>
-          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${s.idEstudiante}">Borrar</button>
+          <a class="btn btn-sm btn-outline-primary" href="estudiantes-detalle.html?id=${encodeURIComponent(s.idEstudiante)}">Ver</a>
+          <a class="btn btn-sm btn-outline-secondary" href="estudiantes-editar.html?id=${encodeURIComponent(s.idEstudiante)}">Editar</a>
+          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${escapeHtml(s.idEstudiante)}">Borrar</button>
         </td>`;
       tbody.appendChild(tr);
     });

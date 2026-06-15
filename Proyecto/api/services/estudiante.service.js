@@ -1,4 +1,5 @@
 import EstudianteRepository from '../repositories/estudiante.repository.js';
+import InscripcionRepository from '../repositories/inscripcion.repository.js';
 import EstudianteResponseDTO from '../dtos/estudiante.response.dto.js';
 import BaseService from './base.service.js';
 import createError from 'http-errors';
@@ -16,6 +17,7 @@ export default class EstudianteService extends BaseService {
   constructor() {
     super();
     this.repository = new EstudianteRepository();
+    this.inscripcionRepository = new InscripcionRepository();
   }
 
   async getAll(filter, limit, offset, order) {
@@ -61,6 +63,14 @@ export default class EstudianteService extends BaseService {
   }
 
   async remove(id, idUsuario) {
+    const inscripcionesActivas = await this.inscripcionRepository.contarActivasPorEstudiante(id);
+    if (inscripcionesActivas > 0) {
+      throw createError(
+        409,
+        `No se puede eliminar el estudiante: tiene ${inscripcionesActivas} inscripción(es) activa(s).`,
+      );
+    }
+
     const rowCount = await this.repository.delete(id, idUsuario);
     if (rowCount === 0) {
       throw createError(404, 'Estudiante no encontrado.');

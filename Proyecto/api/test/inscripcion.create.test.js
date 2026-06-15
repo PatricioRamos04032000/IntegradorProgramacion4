@@ -20,12 +20,14 @@ describe('InscripcionService.create — estado del curso', () => {
     const service = new InscripcionService();
     const client = { query: async () => {}, release: () => {} };
     pool.connect = async () => client;
+    service.repository.lockCurso = async () => {};
+    service.repository.obtenerEstudianteActivo = async () => ({ id_estudiante: 1, activo: 1 });
     service.repository.existeActivaPorCursoYEstudiante = async () => false;
     service.repository.obtenerCursoParaCupo = async () => cursoAbierto({ id_curso_estado: 1 });
 
     await assert.rejects(
       () => service.create({ idCurso: 1, idEstudiante: 1 }, 1),
-      (err) => err.status === 400 && err.message.includes('inscripción abierta'),
+      (err) => err.status === 422 && err.message.includes('inscripción abierta'),
     );
 
     pool.connect = originalConnect;
@@ -35,12 +37,14 @@ describe('InscripcionService.create — estado del curso', () => {
     const service = new InscripcionService();
     const client = { query: async () => {}, release: () => {} };
     pool.connect = async () => client;
+    service.repository.lockCurso = async () => {};
+    service.repository.obtenerEstudianteActivo = async () => ({ id_estudiante: 1, activo: 1 });
     service.repository.existeActivaPorCursoYEstudiante = async () => false;
     service.repository.obtenerCursoParaCupo = async () => cursoAbierto({ id_curso_estado: 3 });
 
     await assert.rejects(
       () => service.create({ idCurso: 1, idEstudiante: 1 }, 1),
-      (err) => err.status === 400 && err.message.includes('inscripción abierta'),
+      (err) => err.status === 422 && err.message.includes('inscripción abierta'),
     );
 
     pool.connect = originalConnect;
@@ -50,6 +54,8 @@ describe('InscripcionService.create — estado del curso', () => {
     const service = new InscripcionService();
     const client = { query: async () => {}, release: () => {} };
     pool.connect = async () => client;
+    service.repository.lockCurso = async () => {};
+    service.repository.obtenerEstudianteActivo = async () => ({ id_estudiante: 1, activo: 1 });
     service.repository.existeActivaPorCursoYEstudiante = async () => false;
     service.repository.obtenerCursoParaCupo = async () => cursoAbierto({
       id_curso_estado: 2,
@@ -58,7 +64,7 @@ describe('InscripcionService.create — estado del curso', () => {
 
     await assert.rejects(
       () => service.create({ idCurso: 1, idEstudiante: 1 }, 1),
-      (err) => err.status === 400 && err.message.includes('habilitado'),
+      (err) => err.status === 422 && err.message.includes('habilitado'),
     );
 
     pool.connect = originalConnect;

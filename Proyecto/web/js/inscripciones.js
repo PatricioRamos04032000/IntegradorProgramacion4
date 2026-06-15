@@ -1,5 +1,6 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+import { escapeHtml } from './dom.js';
 import {
   appendPageParams,
   bindPaginationControls,
@@ -44,13 +45,13 @@ async function cargar() {
         ? new Date(ins.fechaHoraInscripcion).toLocaleDateString('es-AR')
         : '—';
       tr.innerHTML = `
-        <td>${fecha}</td>
-        <td>${ins.cursoNombre}</td>
-        <td>${ins.apellido}, ${ins.nombres}</td>
-        <td>${ins.documento}</td>
+        <td>${escapeHtml(fecha)}</td>
+        <td>${escapeHtml(ins.cursoNombre)}</td>
+        <td>${escapeHtml(ins.apellido)}, ${escapeHtml(ins.nombres)}</td>
+        <td>${escapeHtml(ins.documento)}</td>
         <td class="fcad-tabla-acciones">
-          <a class="btn btn-sm btn-outline-primary" href="inscripciones-detalle.html?id=${ins.idInscripcion}">Ver</a>
-          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${ins.idInscripcion}">Dar de baja</button>
+          <a class="btn btn-sm btn-outline-primary" href="inscripciones-detalle.html?id=${encodeURIComponent(ins.idInscripcion)}">Ver</a>
+          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${escapeHtml(ins.idInscripcion)}">Dar de baja</button>
         </td>`;
       tbody.appendChild(tr);
     });

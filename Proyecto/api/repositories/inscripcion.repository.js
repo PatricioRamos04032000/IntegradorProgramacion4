@@ -132,6 +132,28 @@ export default class InscripcionRepository {
     return result.rows[0] || null;
   }
 
+  async lockCurso(client, idCurso) {
+    await client.query(`SELECT 1 FROM cursos WHERE id_curso = $1 FOR UPDATE`, [idCurso]);
+  }
+
+  async obtenerEstudianteActivo(client, idEstudiante) {
+    const result = await client.query(
+      `SELECT id_estudiante, activo FROM estudiantes WHERE id_estudiante = $1`,
+      [idEstudiante],
+    );
+    return result.rows[0] || null;
+  }
+
+  async contarActivasPorEstudiante(idEstudiante) {
+    const result = await pool.query(
+      `SELECT COUNT(*)::int AS total
+         FROM inscripciones
+        WHERE id_estudiante = $1 AND id_inscripcion_estado = 1`,
+      [Number(idEstudiante)],
+    );
+    return result.rows[0].total;
+  }
+
   async existeActivaPorCursoYEstudiante(client, idCurso, idEstudiante) {
     const result = await client.query(
       `

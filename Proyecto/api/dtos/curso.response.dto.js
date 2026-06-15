@@ -10,5 +10,11 @@ export default class CursoResponseDTO {
     this.estado = curso.estado;
     this.idUsuarioModificacion = curso.id_usuario_modificacion;
     this.fechaHoraModificacion = curso.fecha_hora_modificacion;
+
+    if (curso.inscriptos_actuales != null) {
+      const inscriptosActuales = Number(curso.inscriptos_actuales);
+      this.inscriptosActuales = inscriptosActuales;
+      this.plazasDisponibles = Math.max(0, Number(curso.inscriptos_max) - inscriptosActuales);
+    }
   }
 }

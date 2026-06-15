@@ -58,7 +58,11 @@ export default class CursosRepository {
              c.id_curso_estado,
              cs.descripcion AS estado,
              c.id_usuario_modificacion,
-             c.fecha_hora_modificacion
+             c.fecha_hora_modificacion,
+             (SELECT COUNT(*)::int
+                FROM inscripciones i
+               WHERE i.id_curso = c.id_curso
+                 AND i.id_inscripcion_estado = 1) AS inscriptos_actuales
         FROM cursos c
         JOIN cursos_estados cs ON cs.id_curso_estado = c.id_curso_estado
        WHERE cs.es_activo = 1
@@ -99,10 +103,15 @@ export default class CursosRepository {
              c.id_curso_estado,
              cs.descripcion AS estado,
              c.id_usuario_modificacion,
-             c.fecha_hora_modificacion
+             c.fecha_hora_modificacion,
+             (SELECT COUNT(*)::int
+                FROM inscripciones i
+               WHERE i.id_curso = c.id_curso
+                 AND i.id_inscripcion_estado = 1) AS inscriptos_actuales
         FROM cursos c
         JOIN cursos_estados cs ON cs.id_curso_estado = c.id_curso_estado
        WHERE c.id_curso = $1
+         AND cs.es_activo = 1
       `,
       [Number(id)],
     );
@@ -174,6 +183,16 @@ export default class CursosRepository {
     return result.rowCount;
   }
 
+  async contarInscriptosActivos(idCurso) {
+    const result = await pool.query(
+      `SELECT COUNT(*)::int AS total
+         FROM inscripciones
+        WHERE id_curso = $1 AND id_inscripcion_estado = 1`,
+      [Number(idCurso)],
+    );
+    return result.rows[0].total;
+  }
+
   async getEstadosActivos() {
     const result = await pool.query(`
       SELECT id_curso_estado, descripcion
@@ -182,6 +201,14 @@ export default class CursosRepository {
        ORDER BY id_curso_estado
     `);
     return result.rows;
+  }
+
+  async existeEstadoActivo(idCursoEstado) {
+    const result = await pool.query(
+      `SELECT 1 FROM cursos_estados WHERE id_curso_estado = $1 AND es_activo = 1`,
+      [Number(idCursoEstado)],
+    );
+    return result.rows.length > 0;
   }
 }
 

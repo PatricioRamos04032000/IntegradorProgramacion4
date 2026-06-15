@@ -1,5 +1,6 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
+import { escapeHtml } from './dom.js';
 import {
   appendPageParams,
   bindPaginationControls,
@@ -64,16 +65,16 @@ async function cargar() {
       const tr = document.createElement('tr');
       const fi = c.fechaInicio ? new Date(c.fechaInicio).toLocaleDateString('es-AR') : '\u2014';
       tr.innerHTML = `
-        <td>${c.idCurso}</td>
-        <td>${c.nombre}</td>
-        <td>${fi}</td>
-        <td>${c.cantidadHoras}</td>
-        <td>${c.inscriptosMax}</td>
-        <td>${c.estado || ''}</td>
+        <td>${escapeHtml(c.idCurso)}</td>
+        <td>${escapeHtml(c.nombre)}</td>
+        <td>${escapeHtml(fi)}</td>
+        <td>${escapeHtml(c.cantidadHoras)}</td>
+        <td>${escapeHtml(c.inscriptosMax)}</td>
+        <td>${escapeHtml(c.estado || '')}</td>
         <td class="fcad-tabla-acciones">
-          <a class="btn btn-sm btn-outline-primary" href="cursos-detalle.html?id=${c.idCurso}">Ver</a>
-          <a class="btn btn-sm btn-outline-secondary" href="cursos-editar.html?id=${c.idCurso}">Editar</a>
-          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${c.idCurso}">Eliminar</button>
+          <a class="btn btn-sm btn-outline-primary" href="cursos-detalle.html?id=${encodeURIComponent(c.idCurso)}">Ver</a>
+          <a class="btn btn-sm btn-outline-secondary" href="cursos-editar.html?id=${encodeURIComponent(c.idCurso)}">Editar</a>
+          <button type="button" class="btn btn-sm btn-outline-danger btn-del" data-id="${escapeHtml(c.idCurso)}">Eliminar</button>
         </td>`;
       tbody.appendChild(tr);
     });
