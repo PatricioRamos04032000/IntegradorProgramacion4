@@ -4,6 +4,8 @@ Trabajo Final Integrador de **Programacion IV (FCAD -- UNER)**, 1er cuatrimestre
 
 > **API v2 unificada:** todo el backend en `Proyecto/api/` usa **ESM**, capas por responsabilidad (routes, controllers, services, repositories, dtos, validators, transforms, middleware) y rutas bajo **`/api/v2/*`**. Respuestas JSON en **camelCase** vía DTOs.
 
+Para estudiar el proyecto y preparar la presentación oral, ver la carpeta [`docs/`](docs/).
+
 ## Stack
 
 - **Runtime:** Node.js (>= 18 recomendado)
