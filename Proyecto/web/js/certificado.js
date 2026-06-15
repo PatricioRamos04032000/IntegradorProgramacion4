@@ -1,11 +1,11 @@
 import { API_BASE } from './config.js';
-import { getAccessToken } from './auth.js';
+import { getAccessToken, performLogout } from './auth.js';
 import { authFetch } from './api.js';
 import { parseErrorResponse, throwIfNotOk, extractFilename } from './httpError.js';
 
 export async function descargarCertificado(idInscripcion, { disposition } = {}) {
   if (!getAccessToken()) {
-    window.location.href = 'login.html';
+    await performLogout();
     return;
   }
 

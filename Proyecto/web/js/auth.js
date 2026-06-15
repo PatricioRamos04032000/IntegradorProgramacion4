@@ -1,3 +1,5 @@
+import { API_BASE } from './config.js';
+
 const ACCESS_KEY = 'accessToken';
 const LEGACY_KEY = 'token';
 
@@ -43,4 +45,19 @@ export function isAccessTokenExpired(token, skewSeconds = 30) {
   const payload = decodeJwtPayload(token);
   if (!payload?.exp) return true;
   return payload.exp * 1000 <= Date.now() + skewSeconds * 1000;
+}
+
+export async function performLogout({ redirect = true } = {}) {
+  try {
+    await fetch(`${API_BASE}/api/v2/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch {
+    // Si falla el servidor, igual limpiamos la sesión local.
+  }
+  clearSession();
+  if (redirect) {
+    window.location.href = 'login.html';
+  }
 }

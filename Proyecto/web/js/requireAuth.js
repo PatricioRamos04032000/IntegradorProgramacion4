@@ -1,4 +1,4 @@
-import { getAccessToken, isAccessTokenExpired, clearSession } from './auth.js';
+import { getAccessToken, isAccessTokenExpired, performLogout } from './auth.js';
 import { api, refreshSession } from './api.js';
 
 export async function requireAuth() {
@@ -6,8 +6,7 @@ export async function requireAuth() {
   if (!token || isAccessTokenExpired(token)) {
     const refreshed = await refreshSession();
     if (!refreshed) {
-      clearSession();
-      window.location.href = 'login.html';
+      await performLogout();
       return;
     }
   }
@@ -15,7 +14,6 @@ export async function requireAuth() {
   try {
     await api.get('/api/v2/auth/me');
   } catch {
-    clearSession();
-    window.location.href = 'login.html';
+    await performLogout();
   }
 }

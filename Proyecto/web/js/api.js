@@ -1,5 +1,5 @@
 import { API_BASE } from './config.js';
-import { getAccessToken, setAccessToken, clearSession } from './auth.js';
+import { getAccessToken, setAccessToken, performLogout } from './auth.js';
 import { parseErrorResponse } from './httpError.js';
 
 let refreshPromise = null;
@@ -41,9 +41,8 @@ function buildHeaders(options, token) {
   return headers;
 }
 
-function redirectToLogin() {
-  clearSession();
-  window.location.href = 'login.html';
+async function redirectToLogin() {
+  await performLogout();
 }
 
 async function parseResponse(res) {
@@ -85,12 +84,12 @@ export async function authFetch(url, options = {}, retried = false) {
     if (refreshed) {
       return authFetch(url, options, true);
     }
-    redirectToLogin();
+    await redirectToLogin();
     return null;
   }
 
   if (res.status === 401) {
-    redirectToLogin();
+    await redirectToLogin();
     return null;
   }
 
@@ -110,12 +109,12 @@ async function request(path, options = {}, retried = false) {
     if (refreshed) {
       return request(path, options, true);
     }
-    redirectToLogin();
+    await redirectToLogin();
     return null;
   }
 
   if (res.status === 401) {
-    redirectToLogin();
+    await redirectToLogin();
     return null;
   }
 

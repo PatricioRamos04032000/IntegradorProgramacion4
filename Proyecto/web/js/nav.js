@@ -1,5 +1,4 @@
-import { API_BASE } from './config.js';
-import { clearSession } from './auth.js';
+import { performLogout } from './auth.js';
 
 function paginaActual() {
   const page = window.location.pathname.split('/').pop() || 'index.html';
@@ -16,11 +15,29 @@ function cerrarNavMobile(nav) {
   if (inst) inst.hide();
 }
 
-function initNav() {
-  const header = document.querySelector('.fcad-header');
-  const nav = document.querySelector('.fcad-nav');
-  if (!header || !nav) return;
+function initLogout() {
+  const logout = document.getElementById('logout-link');
+  if (!logout) return;
 
+  logout.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await performLogout();
+  });
+}
+
+function initSidebarNav(nav) {
+  const activa = paginaActual();
+  nav.querySelectorAll('a[href]').forEach((link) => {
+    const href = link.getAttribute('href');
+    if (href === activa) {
+      link.classList.add('active');
+      link.setAttribute('aria-current', 'page');
+    }
+    link.addEventListener('click', () => cerrarNavMobile(nav));
+  });
+}
+
+function initMobileNavToggler(header, nav) {
   nav.id = 'fcad-nav-collapse';
   nav.classList.add('collapse', 'fcad-nav-collapse');
 
@@ -49,33 +66,16 @@ function initNav() {
     grupo.appendChild(logoLink);
     grupo.appendChild(titulo);
   }
+}
 
-  const activa = paginaActual();
-  nav.querySelectorAll('a[href]').forEach((link) => {
-    const href = link.getAttribute('href');
-    if (href === activa) {
-      link.classList.add('active');
-      link.setAttribute('aria-current', 'page');
-    }
-    link.addEventListener('click', () => cerrarNavMobile(nav));
-  });
+function initNav() {
+  initLogout();
 
-  const logout = document.getElementById('logout-link');
-  if (logout) {
-    logout.addEventListener('click', async (e) => {
-      e.preventDefault();
-      try {
-        await fetch(`${API_BASE}/api/v2/auth/logout`, {
-          method: 'POST',
-          credentials: 'include',
-        });
-      } catch {
-        // Si falla el logout remoto, igual limpiamos la sesion local.
-      }
-      clearSession();
-      window.location.href = 'login.html';
-    });
-  }
+  const nav = document.querySelector('.fcad-nav');
+  if (nav) initSidebarNav(nav);
+
+  const header = document.querySelector('.fcad-header');
+  if (header && nav) initMobileNavToggler(header, nav);
 }
 
 document.addEventListener('DOMContentLoaded', initNav);
