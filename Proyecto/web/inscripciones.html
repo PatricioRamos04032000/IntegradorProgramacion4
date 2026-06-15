@@ -10,41 +10,96 @@
   <script src="js/nav.js" type="module" defer></script>
   <script src="js/inscripciones.js" type="module" defer></script>
 </head>
-<body class="bg-light">
-  <header class="fcad-header py-3 px-4 d-flex justify-content-between align-items-center">
-    <h1 class="fcad-titulo h4 mb-0">Cursos FCAD - UNER</h1>
-    <a href="#" id="logout-link" class="text-white small">Salir</a>
-  </header>
+<body>
+
   <div class="fcad-contenedor-principal">
+    
     <nav class="fcad-nav">
-      <ul>
-        <li><a href="index.html">Inicio</a></li>
-        <li><a href="inscripciones.html">Inscripciones</a></li>
-        <li><a href="estudiantes.html">Estudiantes</a></li>
-        <li><a href="cursos.html">Cursos</a></li>
-      </ul>
-    </nav>
-    <main class="fcad-main p-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h4 mb-0">Inscripciones</h2>
-    <a class="btn btn-primary" href="inscripciones-nueva.html">Nueva inscripción</a>
-  </div>
-      <div id="error" class="alert alert-danger" style="display: none" role="alert"></div>
-      <form class="input-group mb-3" id="buscar" style="max-width: 480px;">
-        <input type="text" class="form-control" id="q" placeholder="Documento, curso o apellido">
-        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
-      </form>
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead><tr><th>Fecha</th><th>Curso</th><th>Estudiante</th><th>Documento</th><th></th></tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
+      <div class="sidebar-top">
+        <div class="fcad-brand">
+          <img src="fcad-logo.png" alt="FCAD Logo" class="brand-logo" />
+        </div>
+        
+        <ul class="nav-links">
+          <li>
+            <a href="index.html">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+              Inicio
+            </a>
+          </li>
+          <li>
+            <a href="inscripciones.html" class="active">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14h6"></path><path d="M12 11v6"></path></svg>
+              Inscripciones
+            </a>
+          </li>
+          <li>
+            <a href="estudiantes.html">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              Estudiantes
+            </a>
+          </li>
+          <li>
+            <a href="cursos.html">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+              Cursos
+            </a>
+          </li>
+        </ul>
       </div>
-      <div class="d-flex justify-content-between align-items-center fcad-paginacion">
+      
+      <div class="sidebar-footer">
+        <a href="#" id="logout-link" class="logout-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Salir
+        </a>
+      </div>
+    </nav>
+
+    <main class="fcad-main">
+      
+      <header class="main-content-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
+        <h2 class="h3 fw-bold m-0">Inscripciones</h2>
+        <a class="btn btn-modern-primary" href="inscripciones-nueva.html">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Nueva inscripción
+        </a>
+      </header>
+
+      <div id="error" class="alert alert-danger" style="display: none" role="alert"></div>
+
+      <div class="mb-4">
+        <form class="modern-search-form" id="buscar">
+          <div class="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <input type="text" class="modern-search-input" id="q" placeholder="Documento, curso o apellido">
+          <button class="btn btn-modern-secondary" type="submit">Buscar</button>
+        </form>
+      </div>
+
+      <div class="modern-table-container mb-4">
+        <div class="table-responsive">
+          <table class="table modern-table mb-0">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Curso</th>
+                <th>Estudiante</th>
+                <th>Documento</th>
+                <th>Acciones</th> </tr>
+            </thead>
+            <tbody id="tbody">
+              </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="fcad-paginacion d-flex justify-content-between align-items-center">
         <small class="text-muted" id="pag-info"></small>
         <div class="fcad-paginacion-btns">
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-prev">Anterior</button>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-next">Siguiente</button>
+          <button type="button" class="btn btn-modern-outline" id="btn-prev">Anterior</button>
+          <button type="button" class="btn btn-modern-outline" id="btn-next">Siguiente</button>
         </div>
       </div>
       

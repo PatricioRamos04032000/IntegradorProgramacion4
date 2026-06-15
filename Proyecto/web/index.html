@@ -10,62 +10,67 @@
   <script src="js/nav.js" type="module" defer></script>
   <script src="js/index.js" type="module" defer></script>
 </head>
-<body class="bg-light">
-  <header class="fcad-header py-3 px-4 d-flex justify-content-between align-items-center">
-    <h1 class="fcad-titulo h4 mb-0">Cursos FCAD - UNER</h1>
-    <a href="#" id="logout-link" class="text-white small">Salir</a>
-  </header>
+<body>
+
   <div class="fcad-contenedor-principal">
+    
     <nav class="fcad-nav">
-      <ul>
-        <li><a href="index.html">Inicio</a></li>
-        <li><a href="inscripciones.html">Inscripciones</a></li>
-        <li><a href="estudiantes.html">Estudiantes</a></li>
-        <li><a href="cursos.html">Cursos</a></li>
-      </ul>
+      <div class="sidebar-top">
+        <div class="fcad-brand">
+          <img src="fcad-logo.png" alt="FCAD Logo" class="brand-logo" />
+        </div>
+        
+        <ul class="nav-links">
+          <li><a href="index.html" class="active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg> Inicio</a></li>
+          <li><a href="inscripciones.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14h6"></path><path d="M12 11v6"></path></svg> Inscripciones</a></li>
+          <li><a href="estudiantes.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Estudiantes</a></li>
+          <li><a href="cursos.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> Cursos</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+        <a href="#" id="logout-link" class="logout-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Salir</a>
+      </div>
     </nav>
-    <main class="fcad-main p-4">
-      <p class="lead greeting">Bienvenido, <span id="username">Usuario</span></p>
-      <h2 class="h4 mb-3">Panel de inicio</h2>
+
+    <main class="fcad-main">
+      <header class="main-content-header mb-4">
+        <p class="greeting">Bienvenido, <span id="username">Usuario</span></p>
+        <h2 class="h3 fw-bold m-0">Panel de inicio</h2>
+      </header>
+
       <div id="error" class="alert alert-danger" style="display: none" role="alert"></div>
-      <div class="row g-3 mb-4">
+
+      <div class="row g-4 mb-5">
         <div class="col-md-4">
-          <div class="card border-primary bg-cursos-card">
-            <div class="card-body">
-              <p class="text-muted mb-1">Cursos activos</p>
-              <p class="display-6 mb-0" id="total-cursos">Cargando…</p>
-            </div>
-          </div>
+          <div class="card bg-cursos-card"><div class="card-body p-4"><span class="card-badge">Cursos</span><p class="display-5 fw-bold my-2" id="total-cursos">Cargando…</p><p class="text-muted small mb-0">Unidades activas</p></div></div>
         </div>
         <div class="col-md-4">
-          <div class="card border-success bg-estudiantes-card">
-            <div class="card-body">
-              <p class="text-muted mb-1">Estudiantes activos</p>
-              <p class="display-6 mb-0" id="total-estudiantes">Cargando…</p>
-            </div>
-          </div>
+          <div class="card bg-estudiantes-card"><div class="card-body p-4"><span class="card-badge">Estudiantes</span><p class="display-5 fw-bold my-2" id="total-estudiantes">Cargando…</p><p class="text-muted small mb-0">Alumnos regulares</p></div></div>
         </div>
         <div class="col-md-4">
-          <div class="card border-info bg-inscripciones-card">
-            <div class="card-body">
-              <p class="text-muted mb-1">Inscripciones activas</p>
-              <p class="display-6 mb-0" id="total-inscripciones">Cargando…</p>
-            </div>
-          </div>
+          <div class="card bg-inscripciones-card"><div class="card-body p-4"><span class="card-badge">Inscripciones</span><p class="display-5 fw-bold my-2" id="total-inscripciones">Cargando…</p><p class="text-muted small mb-0">Altas del período</p></div></div>
         </div>
       </div>
-      <h3 class="h5">Cursos activos</h3>
-      <p class="text-muted small mb-2">Ordenados por cantidad de inscriptos.</p>
-      <ul class="list-group mb-3" id="lista-cursos">
-        <li class="list-group-item text-muted">Cargando…</li>
-      </ul>
-      <div class="d-flex justify-content-between align-items-center fcad-paginacion">
-        <small class="text-muted" id="pag-info"></small>
-        <div class="fcad-paginacion-btns">
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-prev">Anterior</button>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-next">Siguiente</button>
+
+      <section class="cursos-section">
+        <div class="mb-4">
+          <h3 class="h5 fw-bold mb-1">Cursos activos</h3>
+          <p class="text-muted small mb-0">Ordenados por cantidad de inscriptos.</p>
         </div>
-      </div>
+
+        <div class="row g-4" id="lista-cursos">
+          <div class="col-12 text-muted">Cargando cursos…</div>
+        </div>
+
+        <div class="fcad-paginacion d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+          <small class="text-muted" id="pag-info"></small>
+          <div class="fcad-paginacion-btns">
+            <button type="button" class="btn btn-modern-outline" id="btn-prev">Anterior</button>
+            <button type="button" class="btn btn-modern-outline" id="btn-next">Siguiente</button>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 </body>
