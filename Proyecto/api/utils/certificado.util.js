@@ -1,4 +1,12 @@
 import createError from 'http-errors';
+import {
+  CERTIFICADO_DATOS_INCOMPLETOS,
+  CURSO_NO_HABILITADO_CERTIFICADO,
+  ESTUDIANTE_INACTIVO_CERTIFICADO,
+  FECHA_INSCRIPCION_INVALIDA,
+  INSCRIPCION_CANCELADA_CERTIFICADO,
+  INSCRIPCION_NO_ENCONTRADA,
+} from '../constants/apiMessages.js';
 
 const ESTADO_INSCRIPCION_ACTIVA = 1;
 
@@ -19,12 +27,12 @@ export function sanitizarNombreArchivo(texto) {
 
 export function formatearFechaInscripcion(fecha) {
   if (fecha == null || fecha === '') {
-    throw createError(422, 'La fecha de inscripción no es válida.');
+    throw createError(422, FECHA_INSCRIPCION_INVALIDA);
   }
 
   const parsed = fecha instanceof Date ? fecha : new Date(fecha);
   if (Number.isNaN(parsed.getTime())) {
-    throw createError(422, 'La fecha de inscripción no es válida.');
+    throw createError(422, FECHA_INSCRIPCION_INVALIDA);
   }
 
   return parsed.toLocaleDateString('es-AR');
@@ -39,19 +47,19 @@ export function buildContentDisposition(id, apellido, disposition = 'attachment'
 
 export function assertElegibleParaCertificado(row) {
   if (!row) {
-    throw createError(404, 'Inscripción no encontrada.');
+    throw createError(404, INSCRIPCION_NO_ENCONTRADA);
   }
 
   if (row.id_inscripcion_estado !== ESTADO_INSCRIPCION_ACTIVA) {
-    throw createError(422, 'La inscripción está cancelada; no se puede emitir certificado.');
+    throw createError(422, INSCRIPCION_CANCELADA_CERTIFICADO);
   }
 
   if (row.activo !== 1) {
-    throw createError(422, 'El estudiante está inactivo; no se puede emitir certificado.');
+    throw createError(422, ESTUDIANTE_INACTIVO_CERTIFICADO);
   }
 
   if (row.curso_estado_activo !== 1) {
-    throw createError(422, 'El curso no está habilitado para emitir certificados.');
+    throw createError(422, CURSO_NO_HABILITADO_CERTIFICADO);
   }
 
   const camposRequeridos = ['apellido', 'nombres', 'documento', 'curso_nombre'];
@@ -61,7 +69,7 @@ export function assertElegibleParaCertificado(row) {
   });
 
   if (faltantes.length > 0) {
-    throw createError(422, 'Datos incompletos para generar el certificado.');
+    throw createError(422, CERTIFICADO_DATOS_INCOMPLETOS);
   }
 
   formatearFechaInscripcion(row.fecha_hora_inscripcion);

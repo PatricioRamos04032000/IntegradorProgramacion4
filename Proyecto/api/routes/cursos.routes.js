@@ -26,7 +26,7 @@ const cursosController = new CursosController();
  *         schema: { type: integer, minimum: 1 }
  *       - in: query
  *         name: limit
- *         schema: { type: integer, minimum: 0, default: 10 }
+ *         schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
  *       - in: query
  *         name: offset
  *         schema: { type: integer, minimum: 0, default: 0 }
@@ -41,6 +41,14 @@ const cursosController = new CursosController();
  *     responses:
  *       200:
  *         description: Lista paginada de cursos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedCursoResponse'
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *   post:
  *     tags: [Cursos]
  *     summary: Alta de curso
@@ -63,6 +71,18 @@ const cursosController = new CursosController();
  *     responses:
  *       201:
  *         description: Curso creado
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       422:
+ *         description: Estado de curso inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: El estado del curso no es válido.
  */
 
 /**
@@ -76,6 +96,8 @@ const cursosController = new CursosController();
  *     responses:
  *       200:
  *         description: Lista de estados
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  */
 
 /**
@@ -107,8 +129,18 @@ const cursosController = new CursosController();
  *                   nombres: { type: string }
  *                   documento: { type: string }
  *                   fechaHoraInscripcion: { type: string, format: date-time }
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Curso no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Curso no encontrado.
  */
 
 /**
@@ -127,8 +159,18 @@ const cursosController = new CursosController();
  *     responses:
  *       200:
  *         description: Curso encontrado
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Curso no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Curso no encontrado.
  *   put:
  *     tags: [Cursos]
  *     summary: Edición de curso
@@ -156,8 +198,34 @@ const cursosController = new CursosController();
  *     responses:
  *       200:
  *         description: Curso actualizado
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Curso no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Curso no encontrado.
+ *       409:
+ *         description: Cupo menor que inscriptos activos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "No se puede reducir el cupo por debajo de los inscriptos actuales (5)."
+ *       422:
+ *         description: Estado de curso inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: El estado del curso no es válido.
  *   delete:
  *     tags: [Cursos]
  *     summary: Baja lógica de curso
@@ -171,8 +239,26 @@ const cursosController = new CursosController();
  *     responses:
  *       204:
  *         description: Curso eliminado (soft delete)
+ *       400:
+ *         $ref: '#/components/responses/BadRequestValidation'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
  *         description: Curso no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: Curso no encontrado.
+ *       409:
+ *         description: Curso con inscriptos activos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "No se puede eliminar el curso: tiene 3 inscripto(s) activo(s)."
  */
 
 router.get('/', [cursosFindAllValidation, cursosFindAllTransform], asyncHandler(cursosController.browse));

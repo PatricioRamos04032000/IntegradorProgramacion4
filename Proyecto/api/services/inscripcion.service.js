@@ -7,6 +7,16 @@ import {
   buildContentDisposition,
 } from '../utils/certificado.util.js';
 import createError from 'http-errors';
+import {
+  CURSO_CUPO_MAXIMO,
+  CURSO_INSCRIPCION_NO_ABIERTA,
+  CURSO_NO_ENCONTRADO_INSCRIPCION,
+  CURSO_NO_HABILITADO_INSCRIPCION,
+  ESTUDIANTE_INACTIVO_INSCRIPCION,
+  ESTUDIANTE_NO_ENCONTRADO_INSCRIPCION,
+  INSCRIPCION_DUPLICADA,
+  INSCRIPCION_NO_ENCONTRADA,
+} from '../constants/apiMessages.js';
 
 /** INSCRIPCIÓN ABIERTA (cursos_estados.id_curso_estado = 2). */
 const CURSO_ESTADO_INSCRIPCION_ABIERTA = 2;
@@ -25,7 +35,7 @@ export default class InscripcionService {
   async getById(id) {
     const row = await this.repository.getById(id);
     if (!row) {
-      throw createError(404, 'Inscripción no encontrada.');
+      throw createError(404, INSCRIPCION_NO_ENCONTRADA);
     }
     return new InscripcionResponseDTO(row);
   }
@@ -44,10 +54,10 @@ export default class InscripcionService {
 
       const estudiante = await this.repository.obtenerEstudianteActivo(client, idEstudiante);
       if (!estudiante) {
-        throw createError(422, 'Estudiante no encontrado.');
+        throw createError(422, ESTUDIANTE_NO_ENCONTRADO_INSCRIPCION);
       }
       if (estudiante.activo !== 1) {
-        throw createError(422, 'El estudiante está inactivo; no se puede inscribir.');
+        throw createError(422, ESTUDIANTE_INACTIVO_INSCRIPCION);
       }
 
       const duplicada = await this.repository.existeActivaPorCursoYEstudiante(
@@ -56,21 +66,21 @@ export default class InscripcionService {
         idEstudiante,
       );
       if (duplicada) {
-        throw createError(409, 'El estudiante ya se encuentra inscripto en este curso.');
+        throw createError(409, INSCRIPCION_DUPLICADA);
       }
 
       const cursoRow = await this.repository.obtenerCursoParaCupo(client, idCurso);
       if (!cursoRow) {
-        throw createError(422, 'Curso no encontrado.');
+        throw createError(422, CURSO_NO_ENCONTRADO_INSCRIPCION);
       }
       if (cursoRow.curso_estado_activo !== 1) {
-        throw createError(422, 'El curso no está habilitado para inscripciones.');
+        throw createError(422, CURSO_NO_HABILITADO_INSCRIPCION);
       }
       if (cursoRow.id_curso_estado !== CURSO_ESTADO_INSCRIPCION_ABIERTA) {
-        throw createError(422, 'Solo se puede inscribir en cursos con inscripción abierta.');
+        throw createError(422, CURSO_INSCRIPCION_NO_ABIERTA);
       }
       if (cursoRow.inscriptos_actuales >= cursoRow.inscriptos_max) {
-        throw createError(409, 'El curso ha alcanzado el cupo máximo de inscriptos.');
+        throw createError(409, CURSO_CUPO_MAXIMO);
       }
 
       const nuevoId = await this.repository.insertarActiva(
@@ -86,7 +96,7 @@ export default class InscripcionService {
       // Red de seguridad: el índice único parcial (uq_inscripcion_activa) puede
       // disparar 23505 ante una carrera que escape al chequeo de aplicación.
       if (error && error.code === '23505') {
-        throw createError(409, 'El estudiante ya se encuentra inscripto en este curso.');
+        throw createError(409, INSCRIPCION_DUPLICADA);
       }
       throw error;
     } finally {
@@ -97,7 +107,7 @@ export default class InscripcionService {
   async remove(id, idUsuario) {
     const existente = await this.repository.getById(id);
     if (!existente) {
-      throw createError(404, 'Inscripción no encontrada.');
+      throw createError(404, INSCRIPCION_NO_ENCONTRADA);
     }
     await this.repository.marcarCancelada(id, idUsuario);
     return true;

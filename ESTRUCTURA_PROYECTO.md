@@ -104,7 +104,13 @@ Un par service/repository por recurso. `cursos.service.js` delega inscriptos a `
 
 Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos de un curso y `dashboard*.response.dto.js` para el panel (`totales`, `cursosRapidos`).
 
-### 4.5 `middleware/`
+### 4.5 `constants/`
+
+| Archivo | Uso |
+|---------|-----|
+| `apiMessages.js` | Mensajes de error de negocio y auth (`{ error: "..." }`); fuente única para services y middlewares |
+
+### 4.6 `middleware/`
 
 | Archivo | Uso |
 |---------|-----|
@@ -113,6 +119,8 @@ Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos
 | `asyncHandler.js` | Propaga errores async al error handler |
 | `handleValidationErrors.js` | Respuesta 400 con `{ errors: [...] }` |
 | `errorHandlers.js` | 404 y errores → JSON `{ error: "..." }` |
+
+**Swagger:** `app.js` define componentes OpenAPI reutilizables (`ErrorResponse`, `ValidationErrorResponse`, responses 400/401/404/409/422/429/500). Cada `routes/*.routes.js` referencia esos componentes en bloques `@openapi`.
 
 ---
 

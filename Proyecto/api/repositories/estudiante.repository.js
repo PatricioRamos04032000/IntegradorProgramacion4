@@ -150,7 +150,7 @@ export default class EstudianteRepository {
          SET activo = 0,
              id_usuario_modificacion = $1,
              fecha_hora_modificacion = NOW()
-       WHERE id_estudiante = $2
+       WHERE id_estudiante = $2 AND activo = 1
       `,
       [Number(idUsuario), Number(id)],
     );

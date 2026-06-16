@@ -3,6 +3,18 @@ import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
 import UsuarioRepository from '../repositories/usuario.repository.js';
 import RefreshTokenRepository from '../repositories/refreshToken.repository.js';
+import {
+  CREDENCIALES_INVALIDAS,
+  JWT_REFRESH_SECRET_NO_CONFIGURADO,
+  JWT_SECRET_NO_CONFIGURADO,
+  LOGIN_CAMPOS_REQUERIDOS,
+  REFRESH_TOKEN_AUSENTE,
+  REFRESH_TOKEN_EXPIRADO,
+  REFRESH_TOKEN_INVALIDO,
+  REFRESH_TOKEN_INVALIDO_O_EXPIRADO,
+  REFRESH_TOKEN_REUTILIZADO,
+  USUARIO_NO_ENCONTRADO_O_INACTIVO,
+} from '../constants/apiMessages.js';
 
 function hashPassword(plain) {
   return crypto.createHash('sha256').update(plain, 'utf8').digest('hex');
@@ -11,7 +23,7 @@ function hashPassword(plain) {
 function getAccessSecret() {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    throw createError(500, 'JWT_SECRET no esta configurado en el servidor');
+    throw createError(500, JWT_SECRET_NO_CONFIGURADO);
   }
   return secret;
 }
@@ -19,7 +31,7 @@ function getAccessSecret() {
 function getRefreshSecret() {
   const secret = process.env.JWT_REFRESH_SECRET;
   if (!secret) {
-    throw createError(500, 'JWT_REFRESH_SECRET no esta configurado en el servidor');
+    throw createError(500, JWT_REFRESH_SECRET_NO_CONFIGURADO);
   }
   return secret;
 }
@@ -70,14 +82,14 @@ export default class AuthService {
 
   async login(nombreUsuario, contrasenia) {
     if (!nombreUsuario || !contrasenia) {
-      throw createError(400, 'nombreUsuario y contrasenia son requeridos');
+      throw createError(400, LOGIN_CAMPOS_REQUERIDOS);
     }
 
     const hashed = hashPassword(contrasenia);
     const usuario = await this.usuarioRepo.obtenerPorCredenciales(nombreUsuario, hashed);
 
     if (!usuario) {
-      throw createError(401, 'Credenciales invalidas');
+      throw createError(401, CREDENCIALES_INVALIDAS);
     }
 
     return issueTokenPair(usuario, this.refreshTokenRepo);
@@ -85,33 +97,33 @@ export default class AuthService {
 
   async refresh(refreshToken) {
     if (!refreshToken) {
-      throw createError(401, 'Refresh token ausente');
+      throw createError(401, REFRESH_TOKEN_AUSENTE);
     }
 
     let decoded;
     try {
       decoded = jwt.verify(refreshToken, getRefreshSecret());
     } catch {
-      throw createError(401, 'Refresh token invalido o expirado');
+      throw createError(401, REFRESH_TOKEN_INVALIDO_O_EXPIRADO);
     }
 
     const stored = await this.refreshTokenRepo.obtenerPorJti(decoded.jti);
     if (!stored) {
-      throw createError(401, 'Refresh token invalido');
+      throw createError(401, REFRESH_TOKEN_INVALIDO);
     }
 
     if (stored.revoked_at) {
       await this.refreshTokenRepo.revocarTodosPorUsuario(stored.id_usuario);
-      throw createError(401, 'Refresh token reutilizado; sesion invalidada');
+      throw createError(401, REFRESH_TOKEN_REUTILIZADO);
     }
 
     if (new Date(stored.expires_at) < new Date()) {
-      throw createError(401, 'Refresh token expirado');
+      throw createError(401, REFRESH_TOKEN_EXPIRADO);
     }
 
     const usuario = await this.usuarioRepo.obtenerPorId(decoded.id_usuario);
     if (!usuario) {
-      throw createError(401, 'Usuario no encontrado o inactivo');
+      throw createError(401, USUARIO_NO_ENCONTRADO_O_INACTIVO);
     }
 
     await this.refreshTokenRepo.revocar(decoded.jti);

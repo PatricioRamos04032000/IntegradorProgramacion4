@@ -5,13 +5,13 @@ const cursosFindAllTransform = (req, res, next) => {
   req.offset = normalizeOffset(req.query.offset);
 
   const filterObj = {};
-  const orderObj = { idCurso: 'ASC' };
-
   const { nombre, idCursoEstado, order } = req.query;
+
+  const direction = req.query.asc === 'true' ? 'ASC' : 'DESC';
+  const orderObj = order ? { [order]: direction } : { idCurso: 'ASC' };
 
   if (nombre) filterObj.nombre = nombre;
   if (idCursoEstado) filterObj.idCursoEstado = Number(idCursoEstado);
-  if (order) orderObj[order] = req.query.asc === 'true' ? 'ASC' : 'DESC';
 
   req.filter = filterObj;
   req.order = orderObj;

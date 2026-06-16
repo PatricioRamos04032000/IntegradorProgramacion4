@@ -282,13 +282,17 @@ Sesiones persistentes para el refresh token JWT.
 
 | Código | Origen típico | Ejemplo |
 |--------|---------------|---------|
-| 400 | Validator | Campos faltantes o tipos incorrectos |
-| 401 | jwtAuth | Token ausente, expirado o usuario inactivo |
-| 404 | Service | Curso no encontrado |
-| 409 | Service | Cupo menor que inscriptos activos |
-| 422 | Service | Estado de curso inválido |
+| 400 | Validator | `{ errors: [...] }` — campos faltantes o tipos incorrectos |
+| 401 | jwtAuth / auth | `No autorizado: token ausente o mal formado.` |
+| 404 | Service | `Curso no encontrado.` / `Inscripción no encontrada.` |
+| 409 | Service | Cupo agotado, inscripción duplicada, dependencias al eliminar |
+| 422 | Service | Estado de curso inválido, entidad no elegible para inscribir |
+| 429 | loginRateLimit | `Demasiados intentos de login. Intente más tarde.` |
+| 500 | Error interno | `Error interno del servidor.` |
 
 Validación → `{ errors: [...] }`. Negocio/auth → `{ error: "..." }`.
+
+Los textos de negocio y auth se definen en [`Proyecto/api/constants/apiMessages.js`](../Proyecto/api/constants/apiMessages.js). Swagger en `/docs` documenta las respuestas por endpoint con componentes reutilizables en `app.js`.
 
 ---
 
