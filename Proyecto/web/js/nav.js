@@ -9,12 +9,6 @@ function paginaActual() {
   return page;
 }
 
-function cerrarNavMobile(nav) {
-  if (window.innerWidth >= 992 || typeof bootstrap === 'undefined') return;
-  const inst = bootstrap.Collapse.getInstance(nav);
-  if (inst) inst.hide();
-}
-
 function initLogout() {
   const logout = document.getElementById('logout-link');
   if (!logout) return;
@@ -33,49 +27,103 @@ function initSidebarNav(nav) {
       link.classList.add('active');
       link.setAttribute('aria-current', 'page');
     }
-    link.addEventListener('click', () => cerrarNavMobile(nav));
   });
 }
 
-function initMobileNavToggler(header, nav) {
-  nav.id = 'fcad-nav-collapse';
-  nav.classList.add('collapse', 'fcad-nav-collapse');
+function initResponsiveNav() {
+  const nav = document.querySelector('.fcad-nav');
+  const container = document.querySelector('.fcad-contenedor-principal');
+  if (!nav || !container) return;
 
-  const titulo = header.querySelector('.fcad-titulo');
-  if (titulo && !header.querySelector('.fcad-nav-toggler')) {
-    const grupo = document.createElement('div');
-    grupo.className = 'd-flex align-items-center gap-2 flex-grow-1 min-w-0';
+  // 1. Crear cabecera móvil
+  const mobileHeader = document.createElement('div');
+  mobileHeader.className = 'fcad-mobile-header';
+  
+  // Botón hamburguesa
+  const hamburgerBtn = document.createElement('button');
+  hamburgerBtn.type = 'button';
+  hamburgerBtn.className = 'fcad-hamburger-btn';
+  hamburgerBtn.setAttribute('aria-label', 'Abrir menú');
+  hamburgerBtn.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  `;
+  
+  // Logo en cabecera móvil
+  const mobileBrand = document.createElement('a');
+  mobileBrand.href = 'index.html';
+  mobileBrand.className = 'fcad-mobile-brand';
+  mobileBrand.innerHTML = `<img src="fcad-logo.png" alt="FCAD Logo" class="mobile-logo" />`;
+  
+  // Espaciador para centrar logo en flex
+  const spacer = document.createElement('div');
+  spacer.style.width = '40px';
 
-    const toggler = document.createElement('button');
-    toggler.type = 'button';
-    toggler.className = 'fcad-nav-toggler navbar-toggler border-0 shadow-none';
-    toggler.setAttribute('data-bs-toggle', 'collapse');
-    toggler.setAttribute('data-bs-target', '#fcad-nav-collapse');
-    toggler.setAttribute('aria-controls', 'fcad-nav-collapse');
-    toggler.setAttribute('aria-expanded', 'false');
-    toggler.setAttribute('aria-label', 'Abrir menú');
-    toggler.innerHTML = '<span class="navbar-toggler-icon"></span>';
+  mobileHeader.appendChild(hamburgerBtn);
+  mobileHeader.appendChild(mobileBrand);
+  mobileHeader.appendChild(spacer);
+  
+  container.insertBefore(mobileHeader, container.firstChild);
 
-    const logoLink = document.createElement('a');
-    logoLink.href = 'index.html';
-    logoLink.className = 'd-flex align-items-center ms-1 me-1';
-    logoLink.innerHTML = '<img src="fcad-logo.png" alt="FCAD Logo" style="height: 48px; width: auto; object-fit: contain;">';
+  // 2. Crear backdrop
+  const backdrop = document.createElement('div');
+  backdrop.className = 'fcad-nav-backdrop';
+  document.body.appendChild(backdrop);
 
-    titulo.parentNode.insertBefore(grupo, titulo);
-    grupo.appendChild(toggler);
-    grupo.appendChild(logoLink);
-    grupo.appendChild(titulo);
+  // Funciones de control
+  function openMenu() {
+    nav.classList.add('mobile-open');
+    backdrop.classList.add('show');
+    document.body.style.overflow = 'hidden';
   }
+
+  function closeMenu() {
+    nav.classList.remove('mobile-open');
+    backdrop.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  hamburgerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openMenu();
+  });
+
+  backdrop.addEventListener('click', closeMenu);
+
+  // Botón cerrar (X) dentro del drawer
+  const brandContainer = nav.querySelector('.fcad-brand');
+  if (brandContainer) {
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'fcad-sidebar-close-btn';
+    closeBtn.setAttribute('aria-label', 'Cerrar menú');
+    closeBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    `;
+    closeBtn.addEventListener('click', closeMenu);
+    brandContainer.appendChild(closeBtn);
+  }
+
+  // Cerrar menú al hacer clic en cualquier enlace
+  nav.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', closeMenu);
+  });
 }
 
 function initNav() {
   initLogout();
 
   const nav = document.querySelector('.fcad-nav');
-  if (nav) initSidebarNav(nav);
-
-  const header = document.querySelector('.fcad-header');
-  if (header && nav) initMobileNavToggler(header, nav);
+  if (nav) {
+    initSidebarNav(nav);
+    initResponsiveNav();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initNav);

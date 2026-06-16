@@ -369,37 +369,145 @@ body {
   border-color: var(--color-sidebar);
 }
 
+/* ─── Responsive: Menú Hamburguesa Móvil (Base) ────────────────────────── */
+.fcad-mobile-header {
+  display: none;
+}
+
+.fcad-sidebar-close-btn {
+  display: none;
+}
+
+.fcad-nav-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1040;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.fcad-nav-backdrop.show {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* ─── Responsive: tablet / mobile ────────────────────────────────────────── */
 @media (max-width: 991.98px) {
   body {
-    padding: 0.5rem; /* Menos margen exterior en dispositivos pequeños */
+    padding: 0.5rem;
   }
   
   .fcad-contenedor-principal {
     flex-direction: column;
     min-height: calc(100vh - 1rem);
-    border-radius: 24px; /* Un poco menos de curva general en móviles */
+    border-radius: 24px;
+    position: relative;
+  }
+
+  .fcad-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .fcad-hamburger-btn {
+    background: none;
+    border: none;
+    color: var(--color-sidebar);
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+  }
+
+  .fcad-hamburger-btn:hover {
+    background-color: var(--color-bg-exterior);
+  }
+
+  .fcad-mobile-brand {
+    display: flex;
+    align-items: center;
+    height: 40px;
+  }
+
+  .mobile-logo {
+    max-height: 100%;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .fcad-sidebar-close-btn {
+    display: flex;
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    z-index: 1060;
+  }
+
+  .fcad-sidebar-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
   }
 
   .fcad-nav {
-    width: 100%;
-    padding: 1.5rem 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    z-index: 1050;
+    background-color: var(--color-sidebar);
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
+    border-radius: 0;
+    overflow-y: auto;
+  }
+
+  .fcad-nav.mobile-open {
+    transform: translateX(0);
   }
   
   .nav-links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
     gap: 0.5rem;
   }
 
   .nav-links li a {
-    padding: 0.6rem 1rem;
+    padding: 0.75rem 1.2rem;
   }
   
   .logout-btn {
-    justify-content: center;
-    margin-top: 1rem;
+    justify-content: flex-start;
+    margin-top: 0;
   }
 
   .fcad-main {
