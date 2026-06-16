@@ -1,17 +1,17 @@
 /* ─── Paleta de colores Moderna ──────────────────────────────────────────── */
 :root {
   /* Fondo exterior de la pantalla (el marco) */
-  --color-bg-exterior:  #e6ebe7; 
+  --color-bg-exterior:  #dadde7; 
   /* Superficie de la app */
   --color-surface:      #ffffff;
   
   /* Barra lateral oscura */
-  --color-sidebar:      #1a1c1e;
+  --color-sidebar:      #204a74;
   --color-sidebar-hover:#2d3033;
   
   /* Acento Verde Lima */
-  --color-accent:       #5268f5;
-  --color-accent-dark:  #284eda; /* Para hovers */
+  --color-accent:       #dadde7;
+  --color-accent-dark:  #2d3033; /* Para hovers */
   
   /* Textos y bordes */
   --color-text-main:    #111111;
@@ -248,7 +248,7 @@ body {
   border: 1px solid var(--color-border) !important;
 }
 .bg-cursos-card .card-badge {
-  background-color: #f3f4f6;
+  background-color: #ffffff;
   color: var(--color-text-main);
 }
 
@@ -448,7 +448,7 @@ body {
   background-color: var(--color-accent);
   color: var(--color-sidebar);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(216, 245, 82, 0.3); /* Resplandor color lima */
+  box-shadow: 0 6px 16px rgba(82, 115, 245, 0.3); /* Resplandor color lima */
 }
 
 /* Buscador Estilo Píldora */
