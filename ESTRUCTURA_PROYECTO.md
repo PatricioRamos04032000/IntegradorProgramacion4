@@ -98,11 +98,11 @@ Documentación OpenAPI en **`/docs`** (JSDoc `@openapi` en cada archivo de rutas
 
 ### 4.3 `services/` y `repositories/`
 
-Un par service/repository por recurso. `cursos.service.js` delega inscriptos a `inscripcion.repository.getActivasByCurso`. `dashboard.repository.js` concentra los conteos del panel. Certificado PDF en `certificadoInscripcionPdf.service.js`.
+Un par service/repository por recurso. `cursos.service.js` delega inscriptos a `inscripcion.repository.getActivasByCurso`. `dashboard.repository.js` concentra los conteos del panel. Certificado PDF en `certificadoInscripcionPdf.service.js`; elegibilidad centralizada en `certificado.util.js` (`esElegibleParaCertificado`, `assertElegibleParaCertificado`).
 
 ### 4.4 `dtos/`
 
-Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos de un curso y `dashboard*.response.dto.js` para el panel (`totales`, `cursosRapidos`).
+Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos de un curso y `dashboard*.response.dto.js` para el panel (`totales`, `cursosRapidos`). `InscripcionResponseDTO` e `InscripcionCursoResponseDTO` exponen `puedeEmitirCertificado` para el frontend.
 
 ### 4.5 `constants/`
 
@@ -137,7 +137,7 @@ Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos
 
 - `GET /` — listado (`nombre`, `idCursoEstado`, `limit`, `offset`, `order`, `asc`)
 - `GET /estados` — estados activos
-- `GET /:id/inscriptos` — inscriptos activos del curso
+- `GET /:id/inscriptos` — inscriptos activos del curso (cada ítem con `puedeEmitirCertificado`)
 - `GET /:id`, `POST /`, `PUT /:id`, `DELETE /:id` (soft delete)
 
 ### Estudiantes (`/api/v2/estudiantes`, JWT)
@@ -147,8 +147,8 @@ Incluye `inscripcionCurso.response.dto.js` para el listado de inscriptos activos
 
 ### Inscripciones (`/api/v2/inscripciones`, JWT)
 
-- `GET /`, `POST /`, `GET /:id`, `DELETE /:id`
-- `GET /:id/certificado` — PDF
+- `GET /`, `POST /`, `GET /:id` (detalle con `idCursoEstado` y `puedeEmitirCertificado`), `DELETE /:id`
+- `GET /:id/certificado` — PDF; requiere curso en INSCRIPCIÓN CERRADA (`id_curso_estado = 3`)
 
 ### Dashboard
 
@@ -163,7 +163,11 @@ Criterios de conteo:
 | `totales.inscripciones` | `id_inscripcion_estado = 1` (no canceladas) |
 | `cursosRapidos` | Cursos activos paginados, ordenados por `inscriptosActuales` DESC |
 
-Certificado PDF usa curso activo (`cursos_estados.es_activo = 1`). **Alta de inscripción** exige además `id_curso_estado = 2` (INSCRIPCIÓN ABIERTA) y curso no eliminado.
+**Dashboard:** conteos con `cursos_estados.es_activo = 1` (estados 1, 2 y 3; excluye ELIMINADO).
+
+**Nueva inscripción:** `id_curso_estado = 2` (INSCRIPCIÓN ABIERTA), curso no eliminado y cupo disponible.
+
+**Certificado PDF:** inscripción activa, estudiante activo, curso no eliminado y **`id_curso_estado = 3` (INSCRIPCIÓN CERRADA)**. El frontend deshabilita el botón según `puedeEmitirCertificado`.
 
 ---
 

@@ -121,14 +121,7 @@ const cursosController = new CursosController();
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   idInscripcion: { type: integer }
- *                   idEstudiante: { type: integer }
- *                   apellido: { type: string }
- *                   nombres: { type: string }
- *                   documento: { type: string }
- *                   fechaHoraInscripcion: { type: string, format: date-time }
+ *                 $ref: '#/components/schemas/InscripcionCursoItem'
  *       400:
  *         $ref: '#/components/responses/BadRequestValidation'
  *       401:

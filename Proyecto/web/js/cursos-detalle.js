@@ -1,7 +1,7 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
 import { escapeHtml } from './dom.js';
-import { descargarCertificado } from './certificado.js';
+import { descargarCertificado, aplicarEstadoBotonCertificado, MSG_CERTIFICADO_NO_DISPONIBLE } from './certificado.js';
 
 function idFromQuery() {
   const id = new URLSearchParams(window.location.search).get('id');
@@ -20,9 +20,16 @@ function row(dt, dd) {
   return `<dt class="col-sm-3">${escapeHtml(dt)}</dt><dd class="col-sm-9">${escapeHtml(dd)}</dd>`;
 }
 
-async function cargarInscriptos(id) {
+async function cargarInscriptos(id, idCursoEstado) {
   const tbody = document.getElementById('tbody-inscriptos');
+  const ayudaCurso = document.getElementById('certificado-ayuda-curso');
   if (!tbody) return;
+
+  if (ayudaCurso) {
+    const cursoCerrado = Number(idCursoEstado) === 3;
+    ayudaCurso.textContent = MSG_CERTIFICADO_NO_DISPONIBLE;
+    ayudaCurso.style.display = cursoCerrado ? 'none' : 'block';
+  }
 
   try {
     const inscriptos = await api.get(`/api/v2/cursos/${id}/inscriptos`);
@@ -47,10 +54,13 @@ async function cargarInscriptos(id) {
           <button type="button" class="btn btn-sm btn-success btn-certificado" data-id="${escapeHtml(i.idInscripcion)}">Descargar diploma</button>
         </td>`;
       tbody.appendChild(tr);
+      const btn = tr.querySelector('.btn-certificado');
+      aplicarEstadoBotonCertificado(btn, Boolean(i.puedeEmitirCertificado));
     });
 
     tbody.querySelectorAll('.btn-certificado').forEach((btn) => {
       btn.addEventListener('click', async () => {
+        if (btn.disabled) return;
         try {
           await descargarCertificado(btn.getAttribute('data-id'));
         } catch (e) {
@@ -85,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       row('Horas', c.cantidadHoras) +
       row('Max. inscriptos', c.inscriptosMax) +
       row('Estado', c.estado || '\u2014');
-    await cargarInscriptos(id);
+    await cargarInscriptos(id, c.idCursoEstado);
   } catch (e) {
     showError(e.message || 'No se pudo cargar el curso.');
   }

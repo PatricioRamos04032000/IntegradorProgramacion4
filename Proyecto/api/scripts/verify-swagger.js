@@ -84,6 +84,31 @@ const swaggerOptions = {
           },
           required: ['items', 'total', 'limit', 'offset'],
         },
+        InscripcionDetail: {
+          type: 'object',
+          properties: {
+            idInscripcion: { type: 'integer' },
+            fechaHoraInscripcion: { type: 'string', format: 'date-time' },
+            cursoNombre: { type: 'string' },
+            apellido: { type: 'string' },
+            nombres: { type: 'string' },
+            documento: { type: 'string' },
+            idCursoEstado: { type: 'integer' },
+            puedeEmitirCertificado: { type: 'boolean' },
+          },
+        },
+        InscripcionCursoItem: {
+          type: 'object',
+          properties: {
+            idInscripcion: { type: 'integer' },
+            idEstudiante: { type: 'integer' },
+            apellido: { type: 'string' },
+            nombres: { type: 'string' },
+            documento: { type: 'string' },
+            fechaHoraInscripcion: { type: 'string', format: 'date-time' },
+            puedeEmitirCertificado: { type: 'boolean' },
+          },
+        },
         EstudianteListItem: {
           type: 'object',
           properties: {

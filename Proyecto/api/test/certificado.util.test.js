@@ -5,7 +5,10 @@ import {
   formatearFechaInscripcion,
   buildContentDisposition,
   assertElegibleParaCertificado,
+  esElegibleParaCertificado,
+  CURSO_ESTADO_INSCRIPCION_CERRADA,
 } from '../utils/certificado.util.js';
+import { CURSO_INSCRIPCION_NO_CERRADA_CERTIFICADO } from '../constants/apiMessages.js';
 
 describe('sanitizarNombreArchivo', () => {
   it('normaliza acentos y caracteres especiales', () => {
@@ -48,11 +51,42 @@ describe('buildContentDisposition', () => {
   });
 });
 
+describe('esElegibleParaCertificado', () => {
+  const baseRow = {
+    id_inscripcion_estado: 1,
+    activo: 1,
+    id_curso_estado: CURSO_ESTADO_INSCRIPCION_CERRADA,
+    curso_estado_activo: 1,
+    apellido: 'García',
+    nombres: 'Ana',
+    documento: '12345678',
+    curso_nombre: 'Programación IV',
+    fecha_hora_inscripcion: '2024-06-15T12:00:00.000Z',
+  };
+
+  it('retorna ok para inscripción elegible con curso cerrado', () => {
+    assert.deepEqual(esElegibleParaCertificado(baseRow), { ok: true });
+  });
+
+  it('rechaza curso en inscripción abierta (2)', () => {
+    const resultado = esElegibleParaCertificado({ ...baseRow, id_curso_estado: 2 });
+    assert.equal(resultado.ok, false);
+    assert.equal(resultado.status, 422);
+    assert.equal(resultado.message, CURSO_INSCRIPCION_NO_CERRADA_CERTIFICADO);
+  });
+
+  it('rechaza curso en borrador (1)', () => {
+    const resultado = esElegibleParaCertificado({ ...baseRow, id_curso_estado: 1 });
+    assert.equal(resultado.ok, false);
+    assert.equal(resultado.message, CURSO_INSCRIPCION_NO_CERRADA_CERTIFICADO);
+  });
+});
+
 describe('assertElegibleParaCertificado', () => {
   const baseRow = {
     id_inscripcion_estado: 1,
     activo: 1,
-    id_curso_estado: 2,
+    id_curso_estado: CURSO_ESTADO_INSCRIPCION_CERRADA,
     curso_estado_activo: 1,
     apellido: 'García',
     nombres: 'Ana',
@@ -93,8 +127,11 @@ describe('assertElegibleParaCertificado', () => {
     );
   });
 
-  it('acepta curso en borrador si el estado es activo', () => {
-    assert.doesNotThrow(() => assertElegibleParaCertificado({ ...baseRow, id_curso_estado: 1 }));
+  it('lanza 422 si el curso no está en inscripción cerrada', () => {
+    assert.throws(
+      () => assertElegibleParaCertificado({ ...baseRow, id_curso_estado: 2 }),
+      (err) => err.status === 422 && err.message === CURSO_INSCRIPCION_NO_CERRADA_CERTIFICADO,
+    );
   });
 
   it('lanza 422 si faltan datos obligatorios', () => {

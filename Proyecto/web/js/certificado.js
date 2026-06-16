@@ -3,6 +3,22 @@ import { getAccessToken, performLogout } from './auth.js';
 import { authFetch } from './api.js';
 import { parseErrorResponse, throwIfNotOk, extractFilename } from './httpError.js';
 
+export const MSG_CERTIFICADO_NO_DISPONIBLE =
+  'Solo se puede emitir certificado cuando el curso tiene inscripción cerrada.';
+
+export function aplicarEstadoBotonCertificado(btn, puedeEmitir, { mensaje = MSG_CERTIFICADO_NO_DISPONIBLE } = {}) {
+  if (!btn) return;
+
+  btn.disabled = !puedeEmitir;
+  if (puedeEmitir) {
+    btn.removeAttribute('title');
+    btn.classList.remove('opacity-50');
+  } else {
+    btn.title = mensaje;
+    btn.classList.add('opacity-50');
+  }
+}
+
 export async function descargarCertificado(idInscripcion, { disposition } = {}) {
   if (!getAccessToken()) {
     await performLogout();

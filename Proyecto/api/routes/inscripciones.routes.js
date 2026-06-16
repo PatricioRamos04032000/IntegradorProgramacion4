@@ -134,13 +134,32 @@ const inscripcionesController = new InscripcionesController();
  *             example:
  *               error: Inscripción no encontrada.
  *       422:
- *         description: Inscripción, estudiante o curso no elegible para certificado
+ *         description: Inscripción, estudiante o curso no elegible para certificado (requiere id_curso_estado = 3, INSCRIPCIÓN CERRADA)
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               error: La inscripción está cancelada; no se puede emitir certificado.
+ *             examples:
+ *               inscripcionCancelada:
+ *                 summary: Inscripción cancelada
+ *                 value:
+ *                   error: La inscripción está cancelada; no se puede emitir certificado.
+ *               estudianteInactivo:
+ *                 summary: Estudiante inactivo
+ *                 value:
+ *                   error: El estudiante está inactivo; no se puede emitir certificado.
+ *               cursoEliminado:
+ *                 summary: Curso eliminado
+ *                 value:
+ *                   error: El curso no está habilitado para emitir certificados.
+ *               cursoNoCerrado:
+ *                 summary: Curso sin inscripción cerrada
+ *                 value:
+ *                   error: Solo se puede emitir certificado cuando el curso tiene inscripción cerrada.
+ *               datosIncompletos:
+ *                 summary: Datos incompletos
+ *                 value:
+ *                   error: Datos incompletos para generar el certificado.
  *       500:
  *         $ref: '#/components/responses/InternalError'
  */
@@ -161,6 +180,10 @@ const inscripcionesController = new InscripcionesController();
  *     responses:
  *       200:
  *         description: Inscripción encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InscripcionDetail'
  *       400:
  *         $ref: '#/components/responses/BadRequestValidation'
  *       401:

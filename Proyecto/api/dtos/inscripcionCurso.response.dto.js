@@ -1,3 +1,5 @@
+import { esElegibleParaCertificado } from '../utils/certificado.util.js';
+
 export default class InscripcionCursoResponseDTO {
   constructor(inscripcion) {
     this.idInscripcion = inscripcion.id_inscripcion;
@@ -6,5 +8,6 @@ export default class InscripcionCursoResponseDTO {
     this.nombres = inscripcion.nombres;
     this.documento = inscripcion.documento;
     this.fechaHoraInscripcion = inscripcion.fecha_hora_inscripcion;
+    this.puedeEmitirCertificado = esElegibleParaCertificado(inscripcion).ok;
   }
 }

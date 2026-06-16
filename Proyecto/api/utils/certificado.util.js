@@ -1,6 +1,7 @@
 import createError from 'http-errors';
 import {
   CERTIFICADO_DATOS_INCOMPLETOS,
+  CURSO_INSCRIPCION_NO_CERRADA_CERTIFICADO,
   CURSO_NO_HABILITADO_CERTIFICADO,
   ESTUDIANTE_INACTIVO_CERTIFICADO,
   FECHA_INSCRIPCION_INVALIDA,
@@ -9,6 +10,17 @@ import {
 } from '../constants/apiMessages.js';
 
 const ESTADO_INSCRIPCION_ACTIVA = 1;
+export const CURSO_ESTADO_INSCRIPCION_CERRADA = 3;
+
+const CAMPOS_REQUERIDOS = ['apellido', 'nombres', 'documento', 'curso_nombre'];
+
+function fechaInscripcionValida(fecha) {
+  if (fecha == null || fecha === '') {
+    return false;
+  }
+  const parsed = fecha instanceof Date ? fecha : new Date(fecha);
+  return !Number.isNaN(parsed.getTime());
+}
 
 export function sanitizarNombreArchivo(texto) {
   if (!texto || typeof texto !== 'string') {
@@ -45,32 +57,46 @@ export function buildContentDisposition(id, apellido, disposition = 'attachment'
   return `${tipo}; filename="${filename}"`;
 }
 
-export function assertElegibleParaCertificado(row) {
+export function esElegibleParaCertificado(row) {
   if (!row) {
-    throw createError(404, INSCRIPCION_NO_ENCONTRADA);
+    return { ok: false, status: 404, message: INSCRIPCION_NO_ENCONTRADA };
   }
 
   if (row.id_inscripcion_estado !== ESTADO_INSCRIPCION_ACTIVA) {
-    throw createError(422, INSCRIPCION_CANCELADA_CERTIFICADO);
+    return { ok: false, status: 422, message: INSCRIPCION_CANCELADA_CERTIFICADO };
   }
 
   if (row.activo !== 1) {
-    throw createError(422, ESTUDIANTE_INACTIVO_CERTIFICADO);
+    return { ok: false, status: 422, message: ESTUDIANTE_INACTIVO_CERTIFICADO };
   }
 
   if (row.curso_estado_activo !== 1) {
-    throw createError(422, CURSO_NO_HABILITADO_CERTIFICADO);
+    return { ok: false, status: 422, message: CURSO_NO_HABILITADO_CERTIFICADO };
   }
 
-  const camposRequeridos = ['apellido', 'nombres', 'documento', 'curso_nombre'];
-  const faltantes = camposRequeridos.filter((campo) => {
+  if (row.id_curso_estado !== CURSO_ESTADO_INSCRIPCION_CERRADA) {
+    return { ok: false, status: 422, message: CURSO_INSCRIPCION_NO_CERRADA_CERTIFICADO };
+  }
+
+  const faltantes = CAMPOS_REQUERIDOS.filter((campo) => {
     const valor = row[campo];
     return valor == null || String(valor).trim() === '';
   });
 
   if (faltantes.length > 0) {
-    throw createError(422, CERTIFICADO_DATOS_INCOMPLETOS);
+    return { ok: false, status: 422, message: CERTIFICADO_DATOS_INCOMPLETOS };
   }
 
-  formatearFechaInscripcion(row.fecha_hora_inscripcion);
+  if (!fechaInscripcionValida(row.fecha_hora_inscripcion)) {
+    return { ok: false, status: 422, message: FECHA_INSCRIPCION_INVALIDA };
+  }
+
+  return { ok: true };
+}
+
+export function assertElegibleParaCertificado(row) {
+  const resultado = esElegibleParaCertificado(row);
+  if (!resultado.ok) {
+    throw createError(resultado.status, resultado.message);
+  }
 }

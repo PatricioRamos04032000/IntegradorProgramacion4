@@ -73,11 +73,18 @@ export default class InscripcionRepository {
       `
       SELECT i.id_inscripcion,
              i.id_estudiante,
+             i.id_inscripcion_estado,
+             i.fecha_hora_inscripcion,
+             c.nombre AS curso_nombre,
+             c.id_curso_estado,
+             cs.es_activo AS curso_estado_activo,
              e.apellido,
              e.nombres,
              e.documento,
-             i.fecha_hora_inscripcion
+             e.activo
         FROM inscripciones i
+        JOIN cursos c ON i.id_curso = c.id_curso
+        JOIN cursos_estados cs ON cs.id_curso_estado = c.id_curso_estado
         JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
        WHERE i.id_curso = $1
          AND i.id_inscripcion_estado = 1
@@ -92,13 +99,18 @@ export default class InscripcionRepository {
     const result = await pool.query(
       `
       SELECT i.id_inscripcion,
+             i.id_inscripcion_estado,
              i.fecha_hora_inscripcion,
              c.nombre AS curso_nombre,
+             c.id_curso_estado,
+             cs.es_activo AS curso_estado_activo,
              e.apellido,
              e.nombres,
-             e.documento
+             e.documento,
+             e.activo
         FROM inscripciones i
         JOIN cursos c ON i.id_curso = c.id_curso
+        JOIN cursos_estados cs ON cs.id_curso_estado = c.id_curso_estado
         JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
        WHERE i.id_inscripcion = $1
          AND i.id_inscripcion_estado = 1

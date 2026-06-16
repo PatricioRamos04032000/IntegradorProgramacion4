@@ -74,6 +74,8 @@ export const ESTUDIANTE_INACTIVO_CERTIFICADO =
   'El estudiante está inactivo; no se puede emitir certificado.';
 export const CURSO_NO_HABILITADO_CERTIFICADO =
   'El curso no está habilitado para emitir certificados.';
+export const CURSO_INSCRIPCION_NO_CERRADA_CERTIFICADO =
+  'Solo se puede emitir certificado cuando el curso tiene inscripción cerrada.';
 export const CERTIFICADO_DATOS_INCOMPLETOS =
   'Datos incompletos para generar el certificado.';
 export const CERTIFICADO_PDF_ERROR = 'No se pudo generar el certificado PDF.';

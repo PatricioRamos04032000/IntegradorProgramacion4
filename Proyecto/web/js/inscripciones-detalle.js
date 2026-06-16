@@ -1,7 +1,7 @@
 import { requireAuth } from './requireAuth.js';
 import { api } from './api.js';
 import { escapeHtml } from './dom.js';
-import { descargarCertificado } from './certificado.js';
+import { descargarCertificado, aplicarEstadoBotonCertificado, MSG_CERTIFICADO_NO_DISPONIBLE } from './certificado.js';
 
 function idFromQuery() {
   const id = new URLSearchParams(window.location.search).get('id');
@@ -30,9 +30,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  let puedeEmitirCertificado = false;
+
   try {
     const ins = await api.get(`/api/v2/inscripciones/${id}`);
     if (!ins) return;
+    puedeEmitirCertificado = Boolean(ins.puedeEmitirCertificado);
     const fecha = ins.fechaHoraInscripcion
       ? new Date(ins.fechaHoraInscripcion).toLocaleDateString('es-AR')
       : '—';
@@ -42,12 +45,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       (documento <strong>${escapeHtml(ins.documento)}</strong>) se encuentra inscripto/a en el curso:</p>
       <p class="fs-5 text-primary text-center">${escapeHtml(ins.cursoNombre)}</p>
       <p class="text-end small text-muted mb-0">Fecha de inscripción: ${escapeHtml(fecha)}</p>`;
+
+    const btnPdf = document.getElementById('btn-pdf');
+    const ayuda = document.getElementById('certificado-ayuda');
+    aplicarEstadoBotonCertificado(btnPdf, puedeEmitirCertificado);
+    if (ayuda) {
+      ayuda.textContent = MSG_CERTIFICADO_NO_DISPONIBLE;
+      ayuda.style.display = puedeEmitirCertificado ? 'none' : 'block';
+    }
   } catch (e) {
     showPageError(e.message || 'No se pudo cargar la inscripción.');
     return;
   }
 
   document.getElementById('btn-pdf').addEventListener('click', async () => {
+    if (!puedeEmitirCertificado) return;
     try {
       await descargarCertificado(id);
     } catch (e) {

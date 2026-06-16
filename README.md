@@ -166,7 +166,7 @@ Documentacion Swagger en **[/docs](http://localhost:3000/docs)**.
 |---------|------------|
 | Cursos | `/api/v2/cursos` (+ `/estados`) |
 | Estudiantes | `/api/v2/estudiantes` |
-| Inscripciones | `/api/v2/inscripciones` (+ `/:id/certificado` PDF) |
+| Inscripciones | `/api/v2/inscripciones` (+ `/:id/certificado` PDF; detalle con `puedeEmitirCertificado`) |
 | Dashboard | `/api/v2/dashboard` — `{ totales, cursosRapidos: { items, total, limit, offset } }` |
 
 #### Cursos
@@ -176,14 +176,25 @@ Documentacion Swagger en **[/docs](http://localhost:3000/docs)**.
 | `GET` | `/api/v2/cursos` | Listado (`limit`, `offset`, `nombre`, `idCursoEstado`, `order`, `asc`) |
 | `GET` | `/api/v2/cursos/estados` | Estados activos |
 | `GET` | `/api/v2/cursos/:id` | Detalle |
-| `GET` | `/api/v2/cursos/:id/inscriptos` | Inscriptos activos del curso (para diplomas) |
+| `GET` | `/api/v2/cursos/:id/inscriptos` | Inscriptos activos del curso (cada ítem incluye `puedeEmitirCertificado`) |
 | `POST` | `/api/v2/cursos` | Alta |
 | `PUT` | `/api/v2/cursos/:id` | Edicion |
 | `DELETE` | `/api/v2/cursos/:id` | Soft delete |
 
 #### Estudiantes / Inscripciones
 
-Mismos verbos CRUD bajo `/api/v2/estudiantes` e `/api/v2/inscripciones`. Body de inscripcion: `{ idCurso, idEstudiante }`.
+Mismos verbos CRUD bajo `/api/v2/estudiantes` e `/api/v2/inscripciones`. Body de inscripcion: `{ idCurso, idEstudiante }`. El detalle `GET /api/v2/inscripciones/:id` incluye `idCursoEstado` y `puedeEmitirCertificado` para habilitar o deshabilitar el botón de certificado en el frontend.
+
+#### Reglas del certificado PDF
+
+`GET /api/v2/inscripciones/:id/certificado` exige:
+
+- Inscripción activa (`id_inscripcion_estado = 1`)
+- Estudiante activo
+- Curso no eliminado (`cursos_estados.es_activo = 1`)
+- Curso en **INSCRIPCIÓN CERRADA** (`id_curso_estado = 3`)
+
+El frontend deshabilita el botón según `puedeEmitirCertificado` en el detalle de inscripción y en el listado de inscriptos del curso.
 
 #### Dashboard
 
@@ -203,7 +214,11 @@ Mismos verbos CRUD bajo `/api/v2/estudiantes` e `/api/v2/inscripciones`. Body de
 
 Query params opcionales: `limit` (default 10), `offset` (default 0). Los cursos se ordenan por cantidad de inscriptos activos (mayor a menor).
 
-Los conteos consideran solo registros activos. Para cursos, **activo** significa `cursos_estados.es_activo = 1` (BORRADOR, INSCRIPCIÓN ABIERTA o INSCRIPCIÓN CERRADA; excluye ELIMINADO). Ese criterio aplica al dashboard y al certificado PDF. **Nueva inscripción:** solo cursos con `id_curso_estado = 2` (INSCRIPCIÓN ABIERTA).
+Los conteos del dashboard consideran solo registros activos. Para cursos, **activo** significa `cursos_estados.es_activo = 1` (BORRADOR, INSCRIPCIÓN ABIERTA o INSCRIPCIÓN CERRADA; excluye ELIMINADO). Ese criterio aplica al dashboard y a los conteos del panel.
+
+**Nueva inscripción:** solo cursos con `id_curso_estado = 2` (INSCRIPCIÓN ABIERTA), curso no eliminado y cupo disponible.
+
+**Certificado PDF:** además de inscripción activa, estudiante activo y curso no eliminado, exige `id_curso_estado = 3` (INSCRIPCIÓN CERRADA). Ver sección *Reglas del certificado PDF* arriba.
 
 **Estudiantes — filtros de listado:** además del atajo `q` (apellido o documento), se pueden combinar `documento`, `apellido`, `nombres` y `email` como query params opcionales (búsqueda parcial con `ILIKE`).
 
@@ -226,6 +241,9 @@ Los errores se muestran en el frontend mediante un **modal de Bootstrap** (popup
 | Recurso no encontrado (service) | `{ error: "..." }` | 404 |
 | Conflicto de estado (cupo, duplicado, dependencias) | `{ error: "..." }` | 409 |
 | Entidad no elegible para la operación | `{ error: "..." }` | 422 |
+
+Ejemplo 422 del certificado (curso sin inscripción cerrada): `Solo se puede emitir certificado cuando el curso tiene inscripción cerrada.`
+
 | Rate limit login | `{ error: "..." }` | 429 |
 | Error interno | `{ error: "..." }` | 500 |
 | Error handler global (ruta inexistente) | `{ error: "..." }` | 404 |
